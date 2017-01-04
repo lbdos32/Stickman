@@ -1,4 +1,4 @@
-package com.thesullies;
+package com.thesullies.characters;
 
 /**
  * Created by kosullivan on 04/01/2017.

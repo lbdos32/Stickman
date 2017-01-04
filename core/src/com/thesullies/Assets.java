@@ -16,8 +16,9 @@ public class Assets {
     public static Animation<TextureRegion> idleAnimation;
     public static Animation<TextureRegion> attack_1_Animation;
     public static Animation<TextureRegion> runAnimation;
+    public static Animation<TextureRegion> coinAnimation;
     public static TiledMap map = null;
-    public static float unitScale = 1 / 16f;
+    public static float unitScale = 1 / 8f;
 
     public static void load() {
         TextureRegion[] idleFrames = new TextureRegion[8];
@@ -41,7 +42,18 @@ public class Assets {
         }
         runAnimation = new Animation(ANIMATION_SPEED, runFrames);
 
+        loadCoinAnimation();
+
         loadMap();
+    }
+
+    private static void loadCoinAnimation() {
+        TextureRegion[] coinFrames = new TextureRegion[4];
+        for (int i = 0; i < 4; i++) {
+            String fileName = "elements/coin/coin_0" + i + ".png";
+            coinFrames[i] = new TextureRegion(new Texture(fileName));
+        }
+        coinAnimation = new Animation(ANIMATION_SPEED, coinFrames);
     }
 
     private static void loadMap() {

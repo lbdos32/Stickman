@@ -8,7 +8,7 @@ import com.thesullies.screens.GameScreen;
  * Created by kosullivan on 04/01/2017.
  */
 
-public class Stickman extends Game {
+public class StickmanGame extends Game {
 
     public static final String LOG_STICKMAN = "STICKMAN";
     // used by all screens

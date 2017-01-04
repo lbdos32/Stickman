@@ -1,4 +1,4 @@
-package com.thesullies;
+package com.thesullies.characters;
 
 /*******************************************************************************
  * Copyright 2011 See AUTHORS file.

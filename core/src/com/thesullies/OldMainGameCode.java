@@ -29,7 +29,7 @@ import com.badlogic.gdx.utils.Logger;
 
 import static com.badlogic.gdx.controllers.ControlType.button;
 
-public class MainGame extends ApplicationAdapter {
+public class OldMainGameCode extends ApplicationAdapter {
     public static final String LOG_STICKMAN = "STICKMAN";
     SpriteBatch batch;
     Texture img;
