@@ -7,7 +7,10 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 //import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.maps.MapProperties;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.thesullies.Assets;
@@ -46,6 +49,8 @@ public class GameScreen extends ScreenAdapter {
 
     Vector2 controlStickNeutral;
 
+    Rectangle boundingRect;
+
     public GameScreen(Stickman game) {
         this.game = game;
 
@@ -67,6 +72,16 @@ public class GameScreen extends ScreenAdapter {
         constrolStickRadius = displayWidth / 10;
         constrolStickNeutralRadius = displayWidth / 30;
 
+
+        TiledMapTileLayer layer = (TiledMapTileLayer)Assets.map.getLayers().get(0);
+        if (guiCam.position.x> layer.getWidth()*layer.getTileWidth()*Assets.unitScale-GAME_WIDTH/2)
+            guiCam.position.x = layer.getWidth()*layer.getTileWidth()*Assets.unitScale-GAME_WIDTH/2;
+        if (guiCam.position.y> layer.getHeight()*layer.getTileHeight()*Assets.unitScale-GAME_HEIGHT/2)
+            guiCam.position.y = layer.getHeight()*layer.getTileHeight()*Assets.unitScale-GAME_HEIGHT/2;
+
+         boundingRect = new Rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, layer.getWidth()*layer.getTileWidth()*Assets.unitScale-GAME_WIDTH/2, layer.getHeight()*layer.getTileHeight()*Assets.unitScale-GAME_HEIGHT/2);
+
+        //Gdx.app.log(Stickman.LOG_STICKMAN, String.format("mapWidth=%d, mapHeight=%d, tilePixelWidth=%d, tilePixelHeight=%d ", mapWidth,mapHeight,tilePixelWidth,tilePixelHeight));
     }
 
     @Override
@@ -112,12 +127,17 @@ public class GameScreen extends ScreenAdapter {
         } else if (inputDirection.y == DOWN) {
             guiCam.position.y -= 1;
         }
-        if (guiCam.position.x <= GAME_WIDTH / 2)
-            guiCam.position.x = GAME_WIDTH / 2;
-        if (guiCam.position.y <= GAME_HEIGHT / 2)
-            guiCam.position.y = GAME_HEIGHT / 2;
+        if (guiCam.position.x <= boundingRect.getX())
+            guiCam.position.x = boundingRect.getX();
+        if (guiCam.position.y <= boundingRect.getY())
+            guiCam.position.y = boundingRect.getY();
+        if (guiCam.position.x> boundingRect.getWidth())
+            guiCam.position.x = boundingRect.getWidth();
+        if (guiCam.position.y> boundingRect.getHeight())
+            guiCam.position.y = boundingRect.getHeight();
         guiCam.update();
 
+        //Gdx.app.log(Stickman.LOG_STICKMAN, String.format("Camera=%f, %f ", guiCam.position.x, guiCam.position.y));
 
     }
 
