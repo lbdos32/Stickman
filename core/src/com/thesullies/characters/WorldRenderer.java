@@ -43,6 +43,7 @@ public class WorldRenderer {
     World world;
     OrthographicCamera guiCam;
     SpriteBatch batch;
+    SpriteBatch debugBatch;
     private OrthogonalTiledMapRenderer mapRenderer;
     private ShapeRenderer shapeRenderer;
 
@@ -54,8 +55,11 @@ public class WorldRenderer {
     private int constrolStickRadius;
     private int constrolStickNeutralRadius;
     Vector2 inputDirection;
-    Rectangle boundingRect;
+    Rectangle boundingRectCamera;
+    public static Rectangle boundingRectStickman;
     BitmapFont font = null;
+    boolean debugOutput = true;
+    BitmapFont debugFont = null;
 
     public WorldRenderer(SpriteBatch batch, World world) {
         this.world = world;
@@ -79,23 +83,36 @@ public class WorldRenderer {
 
         //this.cam = new OrthographicCamera(FRUSTUM_WIDTH, FRUSTUM_HEIGHT);
         //this.cam.position.set(FRUSTUM_WIDTH / 2, FRUSTUM_HEIGHT / 2, 0);
-        this.batch = new SpriteBatch();
+        this.batch = batch; // /new SpriteBatch();
+        debugBatch = new SpriteBatch();
 
         inputDirection = new Vector2();
 
         TiledMapTileLayer layer = (TiledMapTileLayer) Assets.map.getLayers().get(0);
-        boundingRect = new Rectangle(WorldRenderer.GAME_WIDTH / 2, WorldRenderer.GAME_HEIGHT / 2, layer.getWidth() * layer.getTileWidth() * Assets.unitScale - WorldRenderer.GAME_WIDTH / 2, layer.getHeight() * layer.getTileHeight() * Assets.unitScale - WorldRenderer.GAME_HEIGHT / 2);
+        boundingRectCamera = new Rectangle(WorldRenderer.GAME_WIDTH / 2, WorldRenderer.GAME_HEIGHT / 2, layer.getWidth() * layer.getTileWidth() * Assets.unitScale - WorldRenderer.GAME_WIDTH / 2, layer.getHeight() * layer.getTileHeight() * Assets.unitScale - WorldRenderer.GAME_HEIGHT / 2);
+
+        boundingRectStickman = new Rectangle(0, 0, layer.getWidth() * layer.getTileWidth() * Assets.unitScale, layer.getHeight() * layer.getTileHeight() * Assets.unitScale);
 
         font = new BitmapFont();
         font.setColor(Color.GREEN);
         font.getData().setScale(0.5f);
+        debugFont = new BitmapFont();
+        debugFont.setColor(Color.WHITE);
+        debugFont.getData().setScale(5.0f);
     }
 
 
+    /**
+     * Called each game loop to get input from the user and update the position of the stickman
+     * and all game components.
+     *
+     * @param deltaTime
+     */
     public void update(float deltaTime) {
-        world.update(deltaTime, 0);
-        updateInputDirection();
-        updateMapCameraPosition();
+
+        getUserInput();
+
+        world.update(deltaTime, inputDirection);
 
 /*
         switch (state) {
@@ -117,35 +134,11 @@ public class WorldRenderer {
         }*/
     }
 
-    private void updateMapCameraPosition() {
-        if (inputDirection.x == LEFT) {
-            guiCam.position.x -= 1;
-        } else if (inputDirection.x == RIGHT) {
-            guiCam.position.x += 1;
-        }
-        if (inputDirection.y == UP) {
-            guiCam.position.y += 1;
-        } else if (inputDirection.y == DOWN) {
-            guiCam.position.y -= 1;
-        }
 
-        if (guiCam.position.x <= boundingRect.getX())
-            guiCam.position.x = boundingRect.getX();
-        if (guiCam.position.y <= boundingRect.getY())
-            guiCam.position.y = boundingRect.getY();
-        if (guiCam.position.x > boundingRect.getWidth())
-            guiCam.position.x = boundingRect.getWidth();
-        if (guiCam.position.y > boundingRect.getHeight())
-            guiCam.position.y = boundingRect.getHeight();
-        guiCam.update();
-
-        //Gdx.app.log(Stickman.LOG_STICKMAN, String.format("Camera=%f, %f ", guiCam.position.x, guiCam.position.y));
-
-    }
     /**
-     * Detect where on the screen the user has pressed and if this corresponds to up/down/left/right movement
+     * Detect where on the screen the user has pressed and if this corresponds to up/down/left/right movement.
      */
-    private void updateInputDirection() {
+    private void getUserInput() {
 
         inputDirection.x = -1;
         inputDirection.y = -1;
@@ -178,30 +171,49 @@ public class WorldRenderer {
     public void render() {
         //if (world.stickman.position.y > guiCam.position.y)
         //    guiCam.position.y = world.stickman.position.y;
-        guiCam.update();
+
+        updateCam();
+
         batch.setProjectionMatrix(guiCam.combined);
         renderMap();
         renderInputControls();
         renderObjects();
+        renderDebug();
+    }
+
+    private void renderDebug() {
+        if (debugOutput) {
+
+            debugBatch.begin();
+            debugFont.draw(debugBatch, String.format("Stickman state=%s, pos(%.2f, %.2f), vel=(%.2f, %.2f) ", world.stickman.state.toString(), world.stickman.position.x, world.stickman.position.y, world.stickman.velocity.x, world.stickman.velocity.y), 1, displayHeight - 20);
+            debugBatch.end();
+
+        }
+    }
+
+    private void updateCam() {
+        guiCam.position.x = world.stickman.position.x;
+        guiCam.position.y = world.stickman.position.y;
+
+        if (guiCam.position.x <= boundingRectCamera.getX())
+            guiCam.position.x = boundingRectCamera.getX();
+        if (guiCam.position.y <= boundingRectCamera.getY())
+            guiCam.position.y = boundingRectCamera.getY();
+        if (guiCam.position.x > boundingRectCamera.getWidth())
+            guiCam.position.x = boundingRectCamera.getWidth();
+        if (guiCam.position.y > boundingRectCamera.getHeight())
+            guiCam.position.y = boundingRectCamera.getHeight();
+
+        guiCam.update();
     }
 
 
     public void renderObjects() {
-
-
-
         batch.enableBlending();
-
         batch.begin();
-
-
         renderStickman();
-
-        font.draw(batch, "Stickman go --->", 1, GAME_HEIGHT-4 ); //displayHeight-20);
-
+        font.draw(batch, "Stickman go --->", 1, GAME_HEIGHT - 4); //displayHeight-20);
         batch.end();
-
-
     }
 
     private void renderInputControls() {
@@ -215,6 +227,7 @@ public class WorldRenderer {
         shapeRenderer.end();
 
     }
+
     private void drawDownController() {
         if (inputDirection.y == DOWN)
             shapeRenderer.setColor(Color.BLUE);
@@ -246,6 +259,7 @@ public class WorldRenderer {
             shapeRenderer.setColor(Color.WHITE);
         shapeRenderer.arc(this.controlStickNeutral.x, controlStickNeutral.y, constrolStickRadius, 360 - 15, 30);
     }
+
     private void renderMap() {
         mapRenderer.setView(guiCam);
         mapRenderer.render();
@@ -255,7 +269,7 @@ public class WorldRenderer {
         TextureRegion keyFrame;
 
 
-        keyFrame = Assets.runAnimation.getKeyFrame(world.stickman.stateTime, true);
+
         /*switch (world.stickman.state) {
 
 		case Bob.BOB_STATE_FALL:
@@ -270,8 +284,21 @@ public class WorldRenderer {
 		}*/
 
 
-        boolean flip = world.stickman.velocity.x < 0;// ? -1 : 1;
-        batch.draw(keyFrame, flip ? guiCam.position.x + Stickman.STICKMAN_WIDTH : guiCam.position.x, guiCam.position.y, flip ? -Stickman.STICKMAN_WIDTH : Stickman.STICKMAN_WIDTH, Stickman.STICKMAN_HEIGHT);
+        boolean flip = world.stickman.velocity.x < 0;
+        switch (world.stickman.state) {
+            case RUNNING:
+
+                keyFrame = Assets.runAnimation.getKeyFrame(world.stickman.stateTime, true);
+                batch.draw(keyFrame, flip ? world.stickman.position.x + Stickman.STICKMAN_WIDTH : world.stickman.position.x, world.stickman.position.y, flip ? -Stickman.STICKMAN_WIDTH : Stickman.STICKMAN_WIDTH, Stickman.STICKMAN_HEIGHT);
+                break;
+
+
+            case IDLE:
+            default:
+                keyFrame = Assets.idleAnimation.getKeyFrame(world.stickman.stateTime, true);
+                batch.draw(keyFrame, flip ? world.stickman.position.x + Stickman.STICKMAN_WIDTH : world.stickman.position.x, world.stickman.position.y, flip ? -Stickman.STICKMAN_WIDTH : Stickman.STICKMAN_WIDTH, Stickman.STICKMAN_HEIGHT);
+
+        }
 
         //batch.draw(keyFrame, 500, 200);
 
@@ -280,7 +307,7 @@ public class WorldRenderer {
 
     }
 /*
-	private void renderPlatforms () {
+    private void renderPlatforms () {
 		int len = world.platforms.size();
 		for (int i = 0; i < len; i++) {
 			Platform platform = world.platforms.get(i);

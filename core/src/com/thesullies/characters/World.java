@@ -36,14 +36,14 @@ public class World {
 
 
     public World(WorldListener listener) {
-        this.stickman = new Stickman(WorldRenderer.GAME_WIDTH/2, WorldRenderer.GAME_HEIGHT/2);
+        this.stickman = new Stickman(WorldRenderer.GAME_WIDTH/2, WorldRenderer.GAME_HEIGHT);
         this.listener = listener;
         this.rand = new Random();
         this.state = WORLD_STATE_RUNNING;
     }
 
-    public void update(float deltaTime, float accelX) {
-        updateStickman(deltaTime, accelX);
+    public void update(float deltaTime, Vector2 inputDirection) {
+        updateStickman(deltaTime, inputDirection);
         //updatePlatforms(deltaTime);
         //updateSquirrels(deltaTime);
         //updateCoins(deltaTime);
@@ -51,12 +51,12 @@ public class World {
         //checkGameOver();
     }
 
-    private void updateStickman(float deltaTime, float accelX) {
+    private void updateStickman(float deltaTime,  Vector2 inputDirection) {
         //if (this.stickman.state != Stickman.BOB_STATE_HIT && this.stickman.position.y <= 0.5f)
         //    bob.hitPlatform();
         //if (this.stickman.state != Stickman.BOB_STATE_HIT)
         //    this.stickman.velocity.x = -accelX / 10 * Bob.BOB_MOVE_VELOCITY;
-        stickman.update(deltaTime);
+        stickman.update(deltaTime, inputDirection);
         //heightSoFar = Math.max(bob.position.y, heightSoFar);
     }
 }
