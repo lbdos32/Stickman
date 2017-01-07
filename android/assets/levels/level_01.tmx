@@ -11,6 +11,36 @@
  </tileset>
  <tileset firstgid="961" name="grass" tilewidth="32" tileheight="32" tilecount="320" columns="16">
   <image source="../tilesheets/grass.png" width="512" height="640"/>
+  <tile id="32">
+   <properties>
+    <property name="platform" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="33">
+   <properties>
+    <property name="platform" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="34">
+   <properties>
+    <property name="platform" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="35">
+   <properties>
+    <property name="platform" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="36">
+   <properties>
+    <property name="platform" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="37">
+   <properties>
+    <property name="platform" type="bool" value="true"/>
+   </properties>
+  </tile>
  </tileset>
  <tileset firstgid="1281" name="Castle insides" tilewidth="32" tileheight="32" tilecount="256" columns="16">
   <image source="../tilesheets/Castle_2.png" width="512" height="512"/>
