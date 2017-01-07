@@ -21,13 +21,16 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.physics.box2d.World;
 import com.thesullies.Assets;
+import com.thesullies.maps.Constants;
 
 import static com.badlogic.gdx.Input.Keys.DOWN;
 import static com.badlogic.gdx.Input.Keys.LEFT;
@@ -40,8 +43,8 @@ public class WorldRenderer {
     public static final int GAME_HEIGHT = 80;
 
 
-    World world;
-    OrthographicCamera guiCam;
+    StickmanWorld stickmanWorld;
+    public static OrthographicCamera guiCam;
     SpriteBatch batch;
     SpriteBatch debugBatch;
     private OrthogonalTiledMapRenderer mapRenderer;
@@ -58,11 +61,17 @@ public class WorldRenderer {
     Rectangle boundingRectCamera;
     public static Rectangle boundingRectStickman;
     BitmapFont font = null;
-    boolean debugOutput = true;
+    public static boolean debugOutput = true;
     BitmapFont debugFont = null;
 
-    public WorldRenderer(SpriteBatch batch, World world) {
-        this.world = world;
+    public static float mapCellSize;
+
+    Matrix4 debugMatrix;
+    Box2DDebugRenderer debugRenderer;
+
+
+    public WorldRenderer(SpriteBatch batch, StickmanWorld stickmanWorld) {
+        this.stickmanWorld = stickmanWorld;
 
         guiCam = new OrthographicCamera();
         guiCam.setToOrtho(false, GAME_WIDTH, GAME_HEIGHT);
@@ -89,6 +98,7 @@ public class WorldRenderer {
         inputDirection = new Vector2();
 
         TiledMapTileLayer layer = (TiledMapTileLayer) Assets.map.getLayers().get(0);
+        mapCellSize = layer.getTileHeight();
         boundingRectCamera = new Rectangle(WorldRenderer.GAME_WIDTH / 2, WorldRenderer.GAME_HEIGHT / 2, layer.getWidth() * layer.getTileWidth() * Assets.unitScale - WorldRenderer.GAME_WIDTH / 2, layer.getHeight() * layer.getTileHeight() * Assets.unitScale - WorldRenderer.GAME_HEIGHT / 2);
 
         boundingRectStickman = new Rectangle(0, 0, layer.getWidth() * layer.getTileWidth() * Assets.unitScale, layer.getHeight() * layer.getTileHeight() * Assets.unitScale);
@@ -98,7 +108,10 @@ public class WorldRenderer {
         font.getData().setScale(0.5f);
         debugFont = new BitmapFont();
         debugFont.setColor(Color.WHITE);
-        debugFont.getData().setScale(5.0f);
+        debugFont.getData().setScale(2.0f);
+
+        debugRenderer = new Box2DDebugRenderer();
+
     }
 
 
@@ -112,7 +125,7 @@ public class WorldRenderer {
 
         getUserInput();
 
-        world.update(deltaTime, inputDirection);
+        stickmanWorld.update(deltaTime, inputDirection);
 
 /*
         switch (state) {
@@ -174,26 +187,30 @@ public class WorldRenderer {
 
         updateCam();
 
+
         batch.setProjectionMatrix(guiCam.combined);
+        debugMatrix = batch.getProjectionMatrix().cpy().scale(Constants.PHYSICS_PIXELS_TO_METERS,
+                Constants.PHYSICS_PIXELS_TO_METERS, 0);
         renderMap();
         renderInputControls();
         renderObjects();
         renderDebug();
+        debugRenderer.render(this.stickmanWorld.physicsWorld, debugMatrix);
     }
 
     private void renderDebug() {
         if (debugOutput) {
 
             debugBatch.begin();
-            debugFont.draw(debugBatch, String.format("Stickman state=%s, pos(%.2f, %.2f), vel=(%.2f, %.2f) ", world.stickman.state.toString(), world.stickman.position.x, world.stickman.position.y, world.stickman.velocity.x, world.stickman.velocity.y), 1, displayHeight - 20);
+            debugFont.draw(debugBatch, String.format("Stickman state=%s, pos(%.2f, %.2f), vel=(%.2f, %.2f) ", stickmanWorld.stickman.state.toString(), stickmanWorld.stickman.position.x, stickmanWorld.stickman.position.y, stickmanWorld.stickman.velocity.x, stickmanWorld.stickman.velocity.y), 1, displayHeight - 20);
             debugBatch.end();
 
         }
     }
 
     private void updateCam() {
-        guiCam.position.x = world.stickman.position.x;
-        guiCam.position.y = world.stickman.position.y;
+        guiCam.position.x = stickmanWorld.stickman.position.x;
+        guiCam.position.y = stickmanWorld.stickman.position.y;
 
         if (guiCam.position.x <= boundingRectCamera.getX())
             guiCam.position.x = boundingRectCamera.getX();
@@ -266,45 +283,7 @@ public class WorldRenderer {
     }
 
     private void renderStickman() {
-        TextureRegion keyFrame;
-
-
-
-        /*switch (world.stickman.state) {
-
-		case Bob.BOB_STATE_FALL:
-			keyFrame = Assets.bobFall.getKeyFrame(world.stickman.stateTime, Animation.ANIMATION_LOOPING);
-			break;
-		case Bob.BOB_STATE_JUMP:
-			keyFrame = Assets.bobJump.getKeyFrame(world.stickman.stateTime, Animation.ANIMATION_LOOPING);
-			break;
-		case Bob.BOB_STATE_HIT:
-		default:
-			keyFrame = Assets.bobHit;
-		}*/
-
-
-        boolean flip = world.stickman.velocity.x < 0;
-        switch (world.stickman.state) {
-            case RUNNING:
-
-                keyFrame = Assets.runAnimation.getKeyFrame(world.stickman.stateTime, true);
-                batch.draw(keyFrame, flip ? world.stickman.position.x + Stickman.STICKMAN_WIDTH : world.stickman.position.x, world.stickman.position.y, flip ? -Stickman.STICKMAN_WIDTH : Stickman.STICKMAN_WIDTH, Stickman.STICKMAN_HEIGHT);
-                break;
-
-
-            case IDLE:
-            default:
-                keyFrame = Assets.idleAnimation.getKeyFrame(world.stickman.stateTime, true);
-                batch.draw(keyFrame, flip ? world.stickman.position.x + Stickman.STICKMAN_WIDTH : world.stickman.position.x, world.stickman.position.y, flip ? -Stickman.STICKMAN_WIDTH : Stickman.STICKMAN_WIDTH, Stickman.STICKMAN_HEIGHT);
-
-        }
-
-        //batch.draw(keyFrame, 500, 200);
-
-        //batch.draw(keyFrame, 10, 10);
-        //batch.draw(keyFrame, 0, 0);
-
+        stickmanWorld.stickman.render(this.batch);
     }
 /*
     private void renderPlatforms () {

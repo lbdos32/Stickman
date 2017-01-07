@@ -5,13 +5,15 @@ import com.badlogic.gdx.math.Vector2;
 import java.util.ArrayList;
 import java.util.Random;
 
-
+import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
+import com.badlogic.gdx.physics.box2d.World;
+import com.thesullies.maps.Constants;
 
 /**
  * Created by kosullivan on 04/01/2017.
  */
 
-public class World {
+public class StickmanWorld {
 
 
     public interface WorldListener {
@@ -33,16 +35,24 @@ public class World {
     private final Random rand;
     private final int state;
     private final WorldListener listener;
+    // Physics Box2d World
+    protected World physicsWorld;
+    private final Box2DDebugRenderer debugRenderer;
 
 
-    public World(WorldListener listener) {
-        this.stickman = new Stickman(WorldRenderer.GAME_WIDTH/2, WorldRenderer.GAME_HEIGHT);
+    public StickmanWorld(WorldListener listener) {
+        this.physicsWorld = new com.badlogic.gdx.physics.box2d.World(new Vector2(0, Constants.PHYSICS_GRAVITY), true);
+        this.debugRenderer = new Box2DDebugRenderer();
+
+        this.stickman = new Stickman(WorldRenderer.GAME_WIDTH/2, WorldRenderer.GAME_HEIGHT, this.physicsWorld);
         this.listener = listener;
         this.rand = new Random();
         this.state = WORLD_STATE_RUNNING;
     }
 
     public void update(float deltaTime, Vector2 inputDirection) {
+        this.physicsWorld.step(1f,6,2); //1f/60f, 6, 2);
+
         updateStickman(deltaTime, inputDirection);
         //updatePlatforms(deltaTime);
         //updateSquirrels(deltaTime);
@@ -59,4 +69,5 @@ public class World {
         stickman.update(deltaTime, inputDirection);
         //heightSoFar = Math.max(bob.position.y, heightSoFar);
     }
+
 }

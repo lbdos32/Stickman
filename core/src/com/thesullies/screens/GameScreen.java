@@ -2,25 +2,14 @@ package com.thesullies.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-//import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
-import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
-import com.thesullies.Assets;
+import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
+import com.badlogic.gdx.physics.box2d.World;
 import com.thesullies.StickmanGame;
-import com.thesullies.characters.World;
+import com.thesullies.characters.StickmanWorld;
 import com.thesullies.characters.WorldRenderer;
-
-import static com.badlogic.gdx.Input.Keys.DOWN;
-import static com.badlogic.gdx.Input.Keys.LEFT;
-import static com.badlogic.gdx.Input.Keys.RIGHT;
-import static com.badlogic.gdx.Input.Keys.UP;
+import com.thesullies.maps.Constants;
 
 /**
  * Created by kosullivan on 04/01/2017.
@@ -37,9 +26,10 @@ public class GameScreen extends ScreenAdapter {
 
     int state;
 
-    private final World.WorldListener worldListener;
-    private final World world;
+    private final StickmanWorld.WorldListener worldListener;
+    private final StickmanWorld stickmanWorld;
     private final WorldRenderer worldRenderer;
+
 
 
     public GameScreen(StickmanGame game) {
@@ -47,8 +37,7 @@ public class GameScreen extends ScreenAdapter {
 
         this.state = GAME_READY;
 
-
-        this.worldListener = new World.WorldListener() {
+        this.worldListener = new StickmanWorld.WorldListener() {
             @Override
             public void jump() {
                 //Assets.playSound(Assets.jumpSound);
@@ -69,15 +58,18 @@ public class GameScreen extends ScreenAdapter {
                 //Assets.playSound(Assets.coinSound);
             }
         };
-        this.world = new World(worldListener);
-        this.worldRenderer = new WorldRenderer(game.batcher, world);
 
-        //Gdx.app.log(Stickman.LOG_STICKMAN, String.format("mapWidth=%d, mapHeight=%d, tilePixelWidth=%d, tilePixelHeight=%d ", mapWidth,mapHeight,tilePixelWidth,tilePixelHeight));
+
+
+        this.stickmanWorld = new StickmanWorld(worldListener);
+        this.worldRenderer = new WorldRenderer(game.batcher, stickmanWorld);
     }
 
     @Override
     public void render(float delta) {
         update(delta);
+        // Step the physics simulation forward at a rate of 60hz
+
         draw();
     }
 
@@ -87,13 +79,11 @@ public class GameScreen extends ScreenAdapter {
     }
 
 
-
     public void draw() {
         Gdx.gl.glClearColor(0.6f, 0, 1, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         worldRenderer.render();
     }
-
 
 
     @Override

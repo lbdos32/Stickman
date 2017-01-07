@@ -57,6 +57,6 @@ public class Assets {
     }
 
     private static void loadMap() {
-        map = new TmxMapLoader().load("levels/level_01.tmx");
+        map = new TmxMapLoader().load("levels/level_00.tmx");
     }
 }
