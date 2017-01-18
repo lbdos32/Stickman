@@ -31,6 +31,7 @@ import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.physics.box2d.World;
 import com.thesullies.Assets;
 import com.thesullies.maps.Constants;
+import com.thesullies.maps.MapBodyBuilder;
 
 import static com.badlogic.gdx.Input.Keys.DOWN;
 import static com.badlogic.gdx.Input.Keys.LEFT;
@@ -51,6 +52,7 @@ public class WorldRenderer {
     private ShapeRenderer shapeRenderer;
 
     Vector2 controlStickNeutral;
+    Vector2 controlStickJump;
 
     private final int displayWidth;
     private final int displayHeight;
@@ -58,11 +60,19 @@ public class WorldRenderer {
     private int constrolStickRadius;
     private int constrolStickNeutralRadius;
     Vector2 inputDirection;
+    private boolean jumpPressed;
     Rectangle boundingRectCamera;
     public static Rectangle boundingRectStickman;
     BitmapFont font = null;
     public static boolean debugOutput = true;
     BitmapFont debugFont = null;
+
+    private final Rectangle rectLeftControl;
+    private final Rectangle rectRightControl;
+    private final Rectangle rectUpControl;
+    private final Rectangle rectDownControl;
+    private final Rectangle rectJumpControl;
+
 
     public static float mapCellSize;
 
@@ -84,8 +94,15 @@ public class WorldRenderer {
         this.shapeRenderer = new ShapeRenderer();
 
         controlStickNeutral = new Vector2(displayWidth / 10, displayHeight / 6);
+        controlStickJump = new Vector2(displayWidth - displayWidth / 10, displayHeight / 6);
         constrolStickRadius = displayWidth / 10;
         constrolStickNeutralRadius = displayWidth / 30;
+
+        this.rectLeftControl = new Rectangle(displayWidth / 10 - constrolStickRadius, displayHeight / 6, constrolStickRadius, constrolStickRadius);
+        this.rectRightControl = new Rectangle(displayWidth / 10 + constrolStickRadius, displayHeight / 6, constrolStickRadius, constrolStickRadius);
+        this.rectUpControl = new Rectangle(displayWidth / 10, constrolStickRadius + displayHeight / 6, constrolStickRadius, constrolStickRadius);
+        this.rectDownControl = new Rectangle(displayWidth / 10, displayHeight / 6 - constrolStickRadius, constrolStickRadius, constrolStickRadius);
+        this.rectJumpControl = new Rectangle(displayWidth - displayWidth / 10, displayHeight / 6, constrolStickRadius, constrolStickRadius);
 
         this.mapRenderer = new OrthogonalTiledMapRenderer(Assets.map, Assets.unitScale);
         this.shapeRenderer = new ShapeRenderer();
@@ -97,7 +114,7 @@ public class WorldRenderer {
 
         inputDirection = new Vector2();
 
-        TiledMapTileLayer layer = (TiledMapTileLayer) Assets.map.getLayers().get(0);
+        TiledMapTileLayer layer = (TiledMapTileLayer) Assets.map.getLayers().get(Constants.MAP_LAYER_PLATFORM);
         mapCellSize = layer.getTileHeight();
         boundingRectCamera = new Rectangle(WorldRenderer.GAME_WIDTH / 2, WorldRenderer.GAME_HEIGHT / 2, layer.getWidth() * layer.getTileWidth() * Assets.unitScale - WorldRenderer.GAME_WIDTH / 2, layer.getHeight() * layer.getTileHeight() * Assets.unitScale - WorldRenderer.GAME_HEIGHT / 2);
 
@@ -112,6 +129,9 @@ public class WorldRenderer {
 
         debugRenderer = new Box2DDebugRenderer();
 
+        // Load the data from the ObjectLayer in the map
+        MapBodyBuilder.buildShapes(Assets.map, mapCellSize * Assets.unitScale * 2, stickmanWorld.physicsWorld);
+
     }
 
 
@@ -125,7 +145,7 @@ public class WorldRenderer {
 
         getUserInput();
 
-        stickmanWorld.update(deltaTime, inputDirection);
+        stickmanWorld.update(deltaTime, this.inputDirection, this.jumpPressed);
 
 /*
         switch (state) {
@@ -153,41 +173,41 @@ public class WorldRenderer {
      */
     private void getUserInput() {
 
-        inputDirection.x = -1;
-        inputDirection.y = -1;
+        this.inputDirection.x = -1;
+        this.inputDirection.y = -1;
+        this.jumpPressed = false;
         if (Gdx.input.isTouched()) {
             //guiCam.unproject(touchPoint.set(Gdx.input.getX(), Gdx.input.getY(), 0));
-            int inputY = displayHeight - Gdx.input.getY();
-            //Gdx.app.log(Stickman.LOG_STICKMAN, String.format("touched=(x=%d, y=%d, adjustedY=%d) ", Gdx.input.getX(), Gdx.input.getY(), inputY));
-            //Gdx.app.log(Stickman.LOG_STICKMAN, String.format("touched=(x=%f, y=%f) " , touchPoint.x, touchPoint.y));
 
-            if (Gdx.input.getX() < (this.controlStickNeutral.x - constrolStickNeutralRadius) && Gdx.input.getX() > 0) {
-                //Gdx.app.log(Stickman.LOG_STICKMAN, String.format("touched LEFT=(x=%d, y=%d) ", Gdx.input.getX(), Gdx.input.getY()));
-                inputDirection.x = LEFT;
-            } else if (Gdx.input.getX() > (this.controlStickNeutral.x + constrolStickNeutralRadius) && Gdx.input.getX() < this.controlStickNeutral.x + constrolStickRadius) {
-                //Gdx.app.log(Stickman.LOG_STICKMAN, String.format("touched RIGHT=(x=%d, y=%d) ", Gdx.input.getX(), Gdx.input.getY()));
-                inputDirection.x = RIGHT;
-            }
-
-
-            if (inputY < (this.controlStickNeutral.y - constrolStickNeutralRadius) && inputY > 0) {
-                //Gdx.app.log(Stickman.LOG_STICKMAN, String.format("touched DOWN=(x=%d, y=%d) ", Gdx.input.getX(),inputY));
-                inputDirection.y = DOWN;
-            } else if (inputY > (this.controlStickNeutral.y + constrolStickNeutralRadius) && inputY < (this.controlStickNeutral.y + constrolStickRadius)) {
-                //Gdx.app.log(Stickman.LOG_STICKMAN, String.format("touched UP=(x=%d, y=%d) ", Gdx.input.getX(), inputY));
-                inputDirection.y = UP;
+            for (int i = 0; i < 10; i++) {
+                if (Gdx.input.isTouched(i)) {
+                    int inputY = displayHeight - Gdx.input.getY(i);
+                    int inputX = Gdx.input.getX(i);
+                    checkInput(inputX, inputY);
+                }
             }
         }
     }
 
+    private void checkInput(int inputX, int inputY) {
+        if (rectDownControl.contains(inputX, inputY))
+            inputDirection.y = DOWN;
+        else if (rectUpControl.contains(inputX, inputY))
+            inputDirection.y = UP;
+
+        if (rectLeftControl.contains(inputX, inputY))
+            inputDirection.x = LEFT;
+        else if (rectRightControl.contains(inputX, inputY))
+            inputDirection.x = RIGHT;
+
+        if (rectJumpControl.contains(inputX, inputY))
+            jumpPressed = true;
+    }
+
 
     public void render() {
-        //if (world.stickman.position.y > guiCam.position.y)
-        //    guiCam.position.y = world.stickman.position.y;
 
         updateCam();
-
-
         batch.setProjectionMatrix(guiCam.combined);
         debugMatrix = batch.getProjectionMatrix().cpy().scale(Constants.PHYSICS_PIXELS_TO_METERS,
                 Constants.PHYSICS_PIXELS_TO_METERS, 0);
@@ -200,11 +220,9 @@ public class WorldRenderer {
 
     private void renderDebug() {
         if (debugOutput) {
-
             debugBatch.begin();
-            debugFont.draw(debugBatch, String.format("Stickman state=%s, pos(%.2f, %.2f), vel=(%.2f, %.2f) ", stickmanWorld.stickman.state.toString(), stickmanWorld.stickman.position.x, stickmanWorld.stickman.position.y, stickmanWorld.stickman.velocity.x, stickmanWorld.stickman.velocity.y), 1, displayHeight - 20);
+            debugFont.draw(debugBatch, stickmanWorld.stickman.toString(), 1, displayHeight - 20);
             debugBatch.end();
-
         }
     }
 
@@ -229,6 +247,7 @@ public class WorldRenderer {
         batch.enableBlending();
         batch.begin();
         renderStickman();
+        renderCoins();
         font.draw(batch, "Stickman go --->", 1, GAME_HEIGHT - 4); //displayHeight-20);
         batch.end();
     }
@@ -237,20 +256,37 @@ public class WorldRenderer {
         shapeRenderer.setColor(Color.RED);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.circle(this.controlStickNeutral.x, controlStickNeutral.y, constrolStickNeutralRadius);
+        drawJumpController();
+
         drawRightController();
         drawUpController();
         drawLeftController();
         drawDownController();
+
+
         shapeRenderer.end();
 
     }
+
+    private void drawJumpController() {
+//        shapeRenderer.circle(this.controlStickJump.x, controlStickJump.y, constrolStickNeutralRadius);
+        if (this.jumpPressed)
+            shapeRenderer.setColor(Color.BLUE);
+        else
+            shapeRenderer.setColor(Color.WHITE);
+
+        shapeRenderer.rect(rectJumpControl.x, rectJumpControl.y, rectJumpControl.width, rectJumpControl.height);
+
+    }
+
 
     private void drawDownController() {
         if (inputDirection.y == DOWN)
             shapeRenderer.setColor(Color.BLUE);
         else
             shapeRenderer.setColor(Color.WHITE);
-        shapeRenderer.arc(this.controlStickNeutral.x, controlStickNeutral.y, constrolStickRadius, 270 - 15, 30);
+        //shapeRenderer.arc(this.controlStickNeutral.x, controlStickNeutral.y, constrolStickRadius, 270 - 15, 30);
+        shapeRenderer.rect(rectDownControl.x, rectDownControl.y, rectDownControl.width, rectDownControl.height);
     }
 
     private void drawLeftController() {
@@ -258,7 +294,8 @@ public class WorldRenderer {
             shapeRenderer.setColor(Color.BLUE);
         else
             shapeRenderer.setColor(Color.WHITE);
-        shapeRenderer.arc(this.controlStickNeutral.x, controlStickNeutral.y, constrolStickRadius, 180 - 15, 30);
+        //shapeRenderer.arc(this.controlStickNeutral.x, controlStickNeutral.y, constrolStickRadius, 180 - 15, 30);
+        shapeRenderer.rect(rectLeftControl.x, rectLeftControl.y, rectLeftControl.width, rectLeftControl.height);
     }
 
     private void drawUpController() {
@@ -266,7 +303,8 @@ public class WorldRenderer {
             shapeRenderer.setColor(Color.BLUE);
         else
             shapeRenderer.setColor(Color.WHITE);
-        shapeRenderer.arc(this.controlStickNeutral.x, controlStickNeutral.y, constrolStickRadius, 90 - 15, 30);
+//        shapeRenderer.arc(this.controlStickNeutral.x, controlStickNeutral.y, constrolStickRadius, 90 - 15, 30);
+        shapeRenderer.rect(rectUpControl.x, rectUpControl.y, rectUpControl.width, rectUpControl.height);
     }
 
     private void drawRightController() {
@@ -274,7 +312,9 @@ public class WorldRenderer {
             shapeRenderer.setColor(Color.BLUE);
         else
             shapeRenderer.setColor(Color.WHITE);
-        shapeRenderer.arc(this.controlStickNeutral.x, controlStickNeutral.y, constrolStickRadius, 360 - 15, 30);
+//        shapeRenderer.arc(this.controlStickNeutral.x, controlStickNeutral.y, constrolStickRadius, 360 - 15, 30);
+        shapeRenderer.rect(rectRightControl.x, rectRightControl.y, rectRightControl.width, rectRightControl.height);
+
     }
 
     private void renderMap() {
@@ -285,21 +325,14 @@ public class WorldRenderer {
     private void renderStickman() {
         stickmanWorld.stickman.render(this.batch);
     }
+
+    private void renderCoins() {
+        for (Coin coin : stickmanWorld.coins) {
+            coin.render(this.batch);
+        }
+    }
 /*
-    private void renderPlatforms () {
-		int len = world.platforms.size();
-		for (int i = 0; i < len; i++) {
-			Platform platform = world.platforms.get(i);
-			TextureRegion keyFrame = Assets.platform;
-			if (platform.state == Platform.PLATFORM_STATE_PULVERIZING) {
-				keyFrame = Assets.brakingPlatform.getKeyFrame(platform.stateTime, Animation.ANIMATION_NONLOOPING);
-			}
-
-			batch.draw(keyFrame, platform.position.x - 1, platform.position.y - 0.25f, 2, 0.5f);
-		}
-	}
-
-	private void renderItems () {
+    private void renderItems () {
 		int len = world.springs.size();
 		for (int i = 0; i < len; i++) {
 			Spring spring = world.springs.get(i);

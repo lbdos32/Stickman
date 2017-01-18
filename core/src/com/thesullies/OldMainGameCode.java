@@ -26,6 +26,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.utils.Logger;
+import com.thesullies.maps.Constants;
 
 import static com.badlogic.gdx.controllers.ControlType.button;
 
@@ -237,7 +238,7 @@ public class OldMainGameCode extends ApplicationAdapter {
         flip = true;
         batch.draw(runAnimation.getKeyFrame(elapsedTime, true), flip ? 1200f + STICKMAN_WIDTH : 1200f, 0f, flip ? -STICKMAN_WIDTH : STICKMAN_WIDTH, STICKMAN_HEIGHT);
 
-        //batch.draw(runAnimation.getKeyFrame(elapsedTime,true),900,0,STICKMAN_WIDTH,STICKMAN_HEIGHT);
+        //batch.draw(runAnimation.getKeyFrame(elapsedTime,true),900,0,STICKMAN_SPRITE_WIDTH,STICKMAN_SPRITE_HEIGHT);
         batch.end();
     }
 
@@ -255,7 +256,7 @@ public class OldMainGameCode extends ApplicationAdapter {
         //debugRenderer.rect(koala.position.x, koala.position.y, Koala.WIDTH, Koala.HEIGHT);
 
         debugRenderer.setColor(Color.YELLOW);
-        TiledMapTileLayer layer = (TiledMapTileLayer)map.getLayers().get(0);
+        TiledMapTileLayer layer = (TiledMapTileLayer)map.getLayers().get(Constants.MAP_LAYER_PLATFORM);
         for (int y = 0; y <= layer.getHeight(); y++) {
             for (int x = 0; x <= layer.getWidth(); x++) {
                 TiledMapTileLayer.Cell cell = layer.getCell(x, y);
