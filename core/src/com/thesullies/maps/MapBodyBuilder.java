@@ -54,6 +54,14 @@ public class MapBodyBuilder {
             Shape shape;
             if (object instanceof RectangleMapObject) {
                 shape = getRectangle((RectangleMapObject) object);
+
+                if (MapBodyBuilder.isCoin(object))
+                {
+                    Coin coin = new Coin(((RectangleMapObject) object).getRectangle().getX()/ppt, ((RectangleMapObject) object).getRectangle().getY()/ppt, world);
+                    StickmanWorld.coins.add(coin);
+                    continue;
+                }
+
             } else if (object instanceof PolygonMapObject) {
                 shape = getPolygon((PolygonMapObject) object);
             } else if (object instanceof PolylineMapObject) {
@@ -63,12 +71,7 @@ public class MapBodyBuilder {
             } else if (object instanceof EllipseMapObject) {
                 shape = getEllipse((EllipseMapObject) object);
 
-                if (MapBodyBuilder.isCoin(object))
-                {
-                    Coin coin = new Coin(((EllipseMapObject) object).getEllipse().x/ppt, ((EllipseMapObject) object).getEllipse().y/ppt, world);
-                    StickmanWorld.coins.add(coin);
-                    continue;
-                }
+
 
 
             } else {
@@ -159,7 +162,6 @@ public class MapBodyBuilder {
     public static boolean isDoor(MapObject userData) {
 
         if (userData.getProperties().get(Constants.PROPERTY_DOOR) != null) {
-            Gdx.app.debug(Constants.LOG_TAG, "isDoor");
             return true;
         }
 
@@ -169,7 +171,6 @@ public class MapBodyBuilder {
     public static boolean isCoin(MapObject userData) {
 
         if (userData.getProperties().get(Constants.PROPERTY_COIN) != null) {
-            Gdx.app.debug(Constants.LOG_TAG, "isCoin");
             return true;
         }
 

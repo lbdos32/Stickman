@@ -26,6 +26,9 @@ import com.thesullies.maps.MapBodyBuilder;
 public class StickmanWorld {
 
 
+    // Kees list of characters to add/remove from the game
+    public static CharacterManager characterManager = new CharacterManager();
+
     public interface WorldListener {
         public void jump();
 
@@ -55,13 +58,25 @@ public class StickmanWorld {
         this.physicsWorld.setContactListener(new Box2DContactListener());
         this.stickman = new Stickman(WorldRenderer.GAME_WIDTH / 2, WorldRenderer.GAME_HEIGHT, this.physicsWorld);
         this.coins = new ArrayList<Coin>();
-        this.coins.add(new Coin(70,20,this.physicsWorld));
         this.listener = listener;
         this.rand = new Random();
         this.state = WORLD_STATE_RUNNING;
     }
 
     public void update(float deltaTime, Vector2 inputDirection, boolean jumpPressed) {
+
+        for (GameObject entity : characterManager.entitiesToRemove)
+        {
+
+            if (entity instanceof Coin) {
+                this.coins.remove(entity);
+            }
+            this.physicsWorld.destroyBody(entity.physicsBody);
+
+        }
+        characterManager.entitiesToRemove.clear();
+
+
         this.physicsWorld.step(1f/60f, 6, 2);
 
         updateStickman(deltaTime, inputDirection, jumpPressed);

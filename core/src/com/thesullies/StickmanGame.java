@@ -1,6 +1,8 @@
 package com.thesullies;
 
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.thesullies.screens.GameScreen;
 
@@ -16,6 +18,8 @@ public class StickmanGame extends Game {
 
     @Override
     public void create() {
+        Gdx.app.setLogLevel(Application.LOG_DEBUG);
+
         batcher = new SpriteBatch();
         //Settings.load();
         Assets.load();

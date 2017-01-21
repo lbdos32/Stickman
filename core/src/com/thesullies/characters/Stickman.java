@@ -44,7 +44,6 @@ public class Stickman extends DynamicGameObject {
     private static final int STICKMAN_LINEAR_DAMPING = 2;
 
 
-
     ShapeRenderer debugShapeRenderer = null;
     private boolean touchingPlatform = false;
 
@@ -73,8 +72,6 @@ public class Stickman extends DynamicGameObject {
 
     Vector2 gravity = new Vector2(0, -2);
     Rectangle stickmanHitBox;
-
-
 
 
     public Stickman(float x, float y, World world) {
@@ -275,34 +272,51 @@ public class Stickman extends DynamicGameObject {
     }
 
     /***
-     *
      * @param contact
      * @param otherFixture
      */
-    public void handleCollision(Contact contact, Fixture otherFixture, boolean contactStart) {
+    public boolean handleCollision(Contact contact, Fixture stickmanFixture, Fixture otherFixture, boolean contactStart) {
 
-
-        if (otherFixture.getBody().getUserData()!=null) {
-            if (otherFixture.getBody().getUserData() instanceof MapObject ) {
-                handleCollisionMapObject(((MapObject)otherFixture.getBody().getUserData()), contactStart);
+        //if (stickmanFixture.getShape()
+        if (otherFixture.getBody().getUserData() != null) {
+            if (otherFixture.getBody().getUserData() instanceof MapObject) {
+                return handleCollisionMapObject(stickmanFixture, ((MapObject) otherFixture.getBody().getUserData()), contactStart);
+            }
+            else if (otherFixture.getBody().getUserData() instanceof Coin) {
+                Gdx.app.debug(Constants.LOG_TAG, "Touching Coin: contactStart=" + contactStart);
+                return true;
             }
         }
         //if (otherFixture.getBody().getUserData()!=null) {
         //    if (otherFixture.getBody().getUserData() instanceof ) {
 //
-  //          }
-    //    }
+        //          }
+        //    }
+        return false;
     }
 
-    private void handleCollisionMapObject(MapObject userData, boolean contactStart) {
+    private boolean handleCollisionMapObject(Fixture stickmanFixture, MapObject userData, boolean contactStart) {
 
+        boolean deleteObject = false;
         if (MapBodyBuilder.isDoor(userData)) {
+            Gdx.app.debug(Constants.LOG_TAG, "Touching Door: contactStart=" + contactStart);
 
             // Time to exit level ?!
+        } else if (MapBodyBuilder.isCoin(userData)) {
+            Gdx.app.debug(Constants.LOG_TAG, "Touching Coin: contactStart=" + contactStart);
+            deleteObject = true;
 
         } else {
-            this.touchingPlatform=contactStart;
+            //if (stickmanFixture.isSensor()) {
+                this.touchingPlatform = contactStart;
+                Gdx.app.debug(Constants.LOG_TAG, "Touching Platform: contactStart=" + contactStart);
+            //} else {
+           //     Gdx.app.debug(Constants.LOG_TAG, "Ignoring Touching Platform for non-sensor: contactStart=" + contactStart);
+            //}
+
         }
+
+        return deleteObject;
     }
 
 
