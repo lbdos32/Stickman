@@ -39,9 +39,12 @@ public class Stickman extends DynamicGameObject {
 
     private static final int STICKMAN_HORIZONTAL_SPEED = 40;
     private static final int STICKMAN_VERTICAL_JUMP = 60;
+
+
     private static final int MAX_LINEAR_VELOCITY_X = 5;
     private static final float JUMP_IMPULSE = 2f;
     private static final int STICKMAN_LINEAR_DAMPING = 2;
+    private static final float STICKMAN_GRAVITY_SCALE = 2f;
 
 
     ShapeRenderer debugShapeRenderer = null;
@@ -96,6 +99,7 @@ public class Stickman extends DynamicGameObject {
 
         this.physicsBody = world.createBody(bodyDef);
         this.physicsBody.setLinearDamping(STICKMAN_LINEAR_DAMPING);
+        this.physicsBody.setGravityScale(STICKMAN_GRAVITY_SCALE);
         this.physicsBody.setUserData(this);
 
         PolygonShape bodyRectangleShape = new PolygonShape();
@@ -123,18 +127,22 @@ public class Stickman extends DynamicGameObject {
         TextureRegion keyFrame;
 
         boolean flip = this.physicsBody.getLinearVelocity().x < 0;
-        switch (this.state) {
-            case RUNNING:
+        if (this.physicsBody.getLinearVelocity().x!=0) {
+            keyFrame = Assets.runAnimation.getKeyFrame(this.stateTime, true);
+            batch.draw(keyFrame, flip ? this.position.x + Stickman.STICKMAN_SPRITE_WIDTH : this.position.x, this.position.y, flip ? -Stickman.STICKMAN_SPRITE_WIDTH : Stickman.STICKMAN_SPRITE_WIDTH, Stickman.STICKMAN_SPRITE_HEIGHT);
+        } else {
 
-                keyFrame = Assets.runAnimation.getKeyFrame(this.stateTime, true);
-                batch.draw(keyFrame, flip ? this.position.x + Stickman.STICKMAN_SPRITE_WIDTH : this.position.x, this.position.y, flip ? -Stickman.STICKMAN_SPRITE_WIDTH : Stickman.STICKMAN_SPRITE_WIDTH, Stickman.STICKMAN_SPRITE_HEIGHT);
-                break;
+            switch (this.state) {
+                case RUNNING:
+
+                    break;
 
 
-            case IDLE:
-            default:
-                keyFrame = Assets.idleAnimation.getKeyFrame(this.stateTime, true);
-                batch.draw(keyFrame, flip ? this.position.x + Stickman.STICKMAN_SPRITE_WIDTH : this.position.x, this.position.y, flip ? -Stickman.STICKMAN_SPRITE_WIDTH : Stickman.STICKMAN_SPRITE_WIDTH, Stickman.STICKMAN_SPRITE_HEIGHT);
+                case IDLE:
+                default:
+                    keyFrame = Assets.idleAnimation.getKeyFrame(this.stateTime, true);
+                    batch.draw(keyFrame, flip ? this.position.x + Stickman.STICKMAN_SPRITE_WIDTH : this.position.x, this.position.y, flip ? -Stickman.STICKMAN_SPRITE_WIDTH : Stickman.STICKMAN_SPRITE_WIDTH, Stickman.STICKMAN_SPRITE_HEIGHT);
+            }
         }
     }
 
