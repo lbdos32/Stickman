@@ -45,10 +45,12 @@ public class Stickman extends DynamicGameObject {
     private static final float JUMP_IMPULSE = 2f;
     private static final int STICKMAN_LINEAR_DAMPING = 2;
     private static final float STICKMAN_GRAVITY_SCALE = 2f;
+    // If velocity is lower than this, then force stop
+    private static final float STICKMAN_LOW_VELOCITY_THRESHOLD = 1f;
 
 
     ShapeRenderer debugShapeRenderer = null;
-    private boolean touchingPlatform = false;
+    private int touchingPlatformCount = 0;
 
 
     public enum STICKMAN_STATES {
@@ -127,7 +129,7 @@ public class Stickman extends DynamicGameObject {
         TextureRegion keyFrame;
 
         boolean flip = this.physicsBody.getLinearVelocity().x < 0;
-        if (this.physicsBody.getLinearVelocity().x!=0) {
+        if (isMovingHorizontally()) {
             keyFrame = Assets.runAnimation.getKeyFrame(this.stateTime, true);
             batch.draw(keyFrame, flip ? this.position.x + Stickman.STICKMAN_SPRITE_WIDTH : this.position.x, this.position.y, flip ? -Stickman.STICKMAN_SPRITE_WIDTH : Stickman.STICKMAN_SPRITE_WIDTH, Stickman.STICKMAN_SPRITE_HEIGHT);
         } else {
@@ -156,43 +158,55 @@ public class Stickman extends DynamicGameObject {
         if (inputDirection.x == LEFT) {
             if (this.physicsBody.getLinearVelocity().x > -MAX_LINEAR_VELOCITY_X) {
                 Vector2 vec = new Vector2(-1f, 0f);
-                this.physicsBody.applyLinearImpulse(vec, this.physicsBody.getWorldCenter(), true); //-1f,0f,this.position.x+STICKMAN_SPRITE_WIDTH/2, this.position.y+STICKMAN_SPRITE_HEIGHT/2, true); //setLinearVelocity(100f,0f);
-                //velocity.x = -STICKMAN_HORIZONTAL_SPEED;
+                this.physicsBody.applyLinearImpulse(vec, this.physicsBody.getWorldCenter(), true);
             }
             if (!isFalling()) {
                 state = STICKMAN_STATES.RUNNING;
             }
         } else if (inputDirection.x == RIGHT) {
-            //this.physicsBody.applyLinearImpulse(+1f,0f,this.position.x+STICKMAN_SPRITE_WIDTH/2, this.position.y+STICKMAN_SPRITE_HEIGHT/2, true); //setLinearVelocity(100f,0f);
             if (this.physicsBody.getLinearVelocity().x < MAX_LINEAR_VELOCITY_X) {
                 Vector2 vec = new Vector2(1f, 0f);
-                this.physicsBody.applyLinearImpulse(vec, this.physicsBody.getWorldCenter(), true); //-1f,0f,this.position.x+STICKMAN_SPRITE_WIDTH/2, this.position.y+STICKMAN_SPRITE_HEIGHT/2, true); //setLinearVelocity(100f,0f);
+                this.physicsBody.applyLinearImpulse(vec, this.physicsBody.getWorldCenter(), true);
             }
-
-            //velocity.x = STICKMAN_HORIZONTAL_SPEED;
             if (!isFalling()) {
                 state = STICKMAN_STATES.RUNNING;
             }
         } else {
+/*
+            if (isMovingHorizontally())
+            {
+                Gdx.app.debug(Constants.LOG_TAG, "STOPPING...");
+                Vector2 vec = new Vector2(-this.physicsBody.getLinearVelocity().x, 0f);
+                this.physicsBody.applyLinearImpulse(vec, this.physicsBody.getWorldCenter(), true);
+            }*/
+
             if (!isFalling() && !isJumping()) {
                 state = STICKMAN_STATES.IDLE;
             }
-//            velocity.x = 0;
         }
 
         if (jump && isTouchingPlatform()) {
             Gdx.app.debug(Constants.LOG_TAG, "Jump!");
             Vector2 vec = new Vector2(0f, JUMP_IMPULSE);
-            this.physicsBody.applyLinearImpulse(vec, this.physicsBody.getWorldCenter(), true); //-1f,0f,this.position.x+STICKMAN_SPRITE_WIDTH/2, this.position.y+STICKMAN_SPRITE_HEIGHT/2, true); //setLinearVelocity(100f,0f);
-            //this.physicsBody.applyLinearImpulse(0f,-10f,this.position.x+STICKMAN_SPRITE_WIDTH/2, this.position.y+STICKMAN_SPRITE_HEIGHT/2, true); //setLinearVelocity(100f,0f);
+            this.physicsBody.applyLinearImpulse(vec, this.physicsBody.getWorldCenter(), true);
         }
 
         if (this.physicsBody.getLinearVelocity().y < 0)
             state = STICKMAN_STATES.FALLING;
         else if (this.physicsBody.getLinearVelocity().y > 0)
             state = STICKMAN_STATES.JUMPING;
+        else
+            state = STICKMAN_STATES.IDLE;
 
         checkPositionLimits();
+    }
+
+    /**
+     * the x value for linear velocity can be really really small, and still non zero. e.g. 0.00000001 - this means its not moving any noticible speed and we should update the visuals accordingly.
+     * @return
+     */
+    private boolean isMovingHorizontally() {
+        return this.physicsBody.getLinearVelocity().x!=0 && this.physicsBody.getLinearVelocity().x<STICKMAN_LOW_VELOCITY_THRESHOLD && this.physicsBody.getLinearVelocity().x>-STICKMAN_LOW_VELOCITY_THRESHOLD;
     }
 
     /**
@@ -215,12 +229,11 @@ public class Stickman extends DynamicGameObject {
     }
 
     private boolean isTouchingPlatform() {
-        return touchingPlatform;
+        return touchingPlatformCount>0;
     }
 
 
     private void stopFalling() {
-        this.velocity.y = 0;
 
         if (isJumping() || isFalling()) {
             state = STICKMAN_STATES.IDLE;
@@ -228,10 +241,10 @@ public class Stickman extends DynamicGameObject {
     }
 
     private boolean isFalling() {
-        if (state.equals(STICKMAN_STATES.FALLING))
-            return true;
-        return false;
-
+        return !isTouchingPlatform();
+//        if (state.equals(STICKMAN_STATES.FALLING))
+//            return true;
+//        return false;
     }
 
     private boolean isJumping() {
@@ -289,8 +302,7 @@ public class Stickman extends DynamicGameObject {
         if (otherFixture.getBody().getUserData() != null) {
             if (otherFixture.getBody().getUserData() instanceof MapObject) {
                 return handleCollisionMapObject(stickmanFixture, ((MapObject) otherFixture.getBody().getUserData()), contactStart);
-            }
-            else if (otherFixture.getBody().getUserData() instanceof Coin) {
+            } else if (otherFixture.getBody().getUserData() instanceof Coin) {
                 Gdx.app.debug(Constants.LOG_TAG, "Touching Coin: contactStart=" + contactStart);
                 return true;
             }
@@ -315,12 +327,16 @@ public class Stickman extends DynamicGameObject {
             deleteObject = true;
 
         } else {
-            //if (stickmanFixture.isSensor()) {
-                this.touchingPlatform = contactStart;
+            if (stickmanFixture.isSensor()) {
+                if (contactStart)
+                    touchingPlatformCount++;
+                else
+                    touchingPlatformCount--;
+
                 Gdx.app.debug(Constants.LOG_TAG, "Touching Platform: contactStart=" + contactStart);
-            //} else {
-           //     Gdx.app.debug(Constants.LOG_TAG, "Ignoring Touching Platform for non-sensor: contactStart=" + contactStart);
-            //}
+            } else {
+                Gdx.app.debug(Constants.LOG_TAG, "Ignoring Touching Platform for non-sensor: contactStart=" + contactStart);
+            }
 
         }
 
@@ -331,12 +347,12 @@ public class Stickman extends DynamicGameObject {
     @Override
     public String toString() {
 
-        return String.format("Stickman state=%s, pos(%.2f, %.2f), physicsPos(%.2f, %.2f), linearVel(%.2f, %.2f), vel(%.2f, %.2f), touchingPlatform=%s ",
+        return String.format("Stickman state=%s, pos(%.2f, %.2f), physicsPos(%.2f, %.2f), linearVel(%.2f, %.2f), touchingPlatform=%s (%d) ",
                 this.state.toString(),
                 this.position.x, this.position.y,
                 this.physicsBody.getPosition().x, this.physicsBody.getPosition().y,
                 this.physicsBody.getLinearVelocity().x, this.physicsBody.getLinearVelocity().y,
-                this.velocity.x, this.velocity.y, this.touchingPlatform);
+                 this.isTouchingPlatform(), this.touchingPlatformCount);
 
     }
 

@@ -22,11 +22,13 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 
 public class GameObject {
+
+    /**
+     * This is the position in the game world, not in the physics engine.
+     * TODO - do we need to keep both, why not just convert from physics position to game world position dynamically?
+     */
     public final Vector2 position;
-    public final Rectangle bounds;
-
     protected float stateTime;
-
     public Body physicsBody;
 
 
@@ -37,6 +39,5 @@ public class GameObject {
 
     public GameObject(float x, float y, float width, float height) {
         this.position = new Vector2(x, y);
-        this.bounds = new Rectangle(x - width / 2, y - height / 2, width, height);
     }
 }
