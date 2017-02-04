@@ -12,7 +12,7 @@ public class Constants {
     // Map Properties
     public static final String PROPERTY_PLATFORM = "platform";
     public static final String PROPERTY_SENSOR = "sensor";
-    public static final String PROPERTY_DOOR = "door";
+    public static final String PROPERTY_DOOR = "exit";
     public static final String PROPERTY_COIN = "coin";
 
 

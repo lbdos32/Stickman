@@ -53,6 +53,9 @@ public class Stickman extends DynamicGameObject {
     private int touchingPlatformCount = 0;
 
 
+    private boolean touchingDoor = false;
+
+
     public enum STICKMAN_STATES {
         IDLE("IDLE"),
         RUNNING("RUNNING"),
@@ -266,31 +269,6 @@ public class Stickman extends DynamicGameObject {
     }
 
 
-    private Array<TiledMapTileLayer.Cell> getTiles(Vector2 position, Rectangle stickmanHitBox) {
-
-        Array<TiledMapTileLayer.Cell> cells = null;
-
-        TiledMapTileLayer layer = (TiledMapTileLayer) Assets.map.getLayers().get(Constants.MAP_LAYER_PLATFORM);
-
-        int startX = (int) ((position.x + stickmanHitBox.x) / Assets.unitScale / WorldRenderer.mapCellSize);
-        int startY = (int) ((position.y + stickmanHitBox.y) / Assets.unitScale / WorldRenderer.mapCellSize);
-        int endX = (int) ((position.x + stickmanHitBox.width) / Assets.unitScale / WorldRenderer.mapCellSize);
-        int endY = (int) ((position.x + stickmanHitBox.height) / Assets.unitScale / WorldRenderer.mapCellSize);
-
-
-        for (int y = startY; y <= endY; y++) {
-            for (int x = startX; x <= endX; x++) {
-                TiledMapTileLayer.Cell cell = layer.getCell(x, y);
-                if (cell != null) {
-                    if (cells == null) {
-                        cells = new Array<TiledMapTileLayer.Cell>();
-                    }
-                    cells.add(cell);
-                }
-            }
-        }
-        return cells;
-    }
 
     /***
      * @param contact
@@ -320,12 +298,12 @@ public class Stickman extends DynamicGameObject {
         boolean deleteObject = false;
         if (MapBodyBuilder.isDoor(userData)) {
             Gdx.app.debug(Constants.LOG_TAG, "Touching Door: contactStart=" + contactStart);
+            this.touchingDoor = true;
 
             // Time to exit level ?!
         } else if (MapBodyBuilder.isCoin(userData)) {
             Gdx.app.debug(Constants.LOG_TAG, "Touching Coin: contactStart=" + contactStart);
             deleteObject = true;
-
         } else {
             if (stickmanFixture.isSensor()) {
                 if (contactStart)
@@ -354,6 +332,14 @@ public class Stickman extends DynamicGameObject {
                 this.physicsBody.getLinearVelocity().x, this.physicsBody.getLinearVelocity().y,
                  this.isTouchingPlatform(), this.touchingPlatformCount);
 
+    }
+
+    public boolean isTouchingDoor() {
+        return touchingDoor;
+    }
+
+    public void setTouchingDoor(boolean touchingDoor) {
+        this.touchingDoor = touchingDoor;
     }
 
 }

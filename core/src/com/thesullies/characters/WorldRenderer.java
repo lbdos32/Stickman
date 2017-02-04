@@ -22,6 +22,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Matrix4;
@@ -60,7 +61,7 @@ public class WorldRenderer {
     private int constrolStickRadius;
     private int constrolStickNeutralRadius;
     Vector2 inputDirection;
-    private boolean jumpPressed;
+    public boolean jumpPressed;
     Rectangle boundingRectCamera;
     public static Rectangle boundingRectStickman;
     BitmapFont font = null;
@@ -80,7 +81,7 @@ public class WorldRenderer {
     Box2DDebugRenderer debugRenderer;
 
 
-    public WorldRenderer(SpriteBatch batch, StickmanWorld stickmanWorld) {
+    public WorldRenderer(SpriteBatch batch, StickmanWorld stickmanWorld, TiledMap map) {
         this.stickmanWorld = stickmanWorld;
 
         guiCam = new OrthographicCamera();
@@ -104,7 +105,7 @@ public class WorldRenderer {
         this.rectDownControl = new Rectangle(displayWidth / 10, displayHeight / 6 - constrolStickRadius, constrolStickRadius, constrolStickRadius);
         this.rectJumpControl = new Rectangle(displayWidth - displayWidth / 10, displayHeight / 6, constrolStickRadius, constrolStickRadius);
 
-        this.mapRenderer = new OrthogonalTiledMapRenderer(Assets.map, Assets.unitScale);
+        this.mapRenderer = new OrthogonalTiledMapRenderer(map, Assets.unitScale);
         this.shapeRenderer = new ShapeRenderer();
 
         //this.cam = new OrthographicCamera(FRUSTUM_WIDTH, FRUSTUM_HEIGHT);
@@ -114,7 +115,7 @@ public class WorldRenderer {
 
         inputDirection = new Vector2();
 
-        TiledMapTileLayer layer = (TiledMapTileLayer) Assets.map.getLayers().get(Constants.MAP_LAYER_PLATFORM);
+        TiledMapTileLayer layer = (TiledMapTileLayer) map.getLayers().get(Constants.MAP_LAYER_PLATFORM);
         mapCellSize = layer.getTileHeight();
         boundingRectCamera = new Rectangle(WorldRenderer.GAME_WIDTH / 2, WorldRenderer.GAME_HEIGHT / 2, layer.getWidth() * layer.getTileWidth() * Assets.unitScale - WorldRenderer.GAME_WIDTH / 2, layer.getHeight() * layer.getTileHeight() * Assets.unitScale - WorldRenderer.GAME_HEIGHT / 2);
 
@@ -130,8 +131,7 @@ public class WorldRenderer {
         debugRenderer = new Box2DDebugRenderer();
 
         // Load the data from the ObjectLayer in the map
-        MapBodyBuilder.buildShapes(Assets.map, mapCellSize * Assets.unitScale * 2, stickmanWorld.physicsWorld);
-
+        MapBodyBuilder.buildShapes(map, mapCellSize * Assets.unitScale * 2, stickmanWorld.physicsWorld);
     }
 
 
@@ -142,29 +142,7 @@ public class WorldRenderer {
      * @param deltaTime
      */
     public void update(float deltaTime) {
-
         getUserInput();
-
-        stickmanWorld.update(deltaTime, this.inputDirection, this.jumpPressed);
-
-/*
-        switch (state) {
-            case GAME_READY:
-                updateReady();
-                break;
-            case GAME_RUNNING:
-                updateRunning(deltaTime);
-                break;
-            case GAME_PAUSED:
-                updatePaused();
-                break;
-            case GAME_LEVEL_END:
-                updateLevelEnd();
-                break;
-            case GAME_OVER:
-                updateGameOver();
-                break;
-        }*/
     }
 
 

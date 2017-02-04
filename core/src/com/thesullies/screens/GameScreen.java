@@ -26,43 +26,12 @@ public class GameScreen extends ScreenAdapter {
 
     int state;
 
-    private final StickmanWorld.WorldListener worldListener;
     private final StickmanWorld stickmanWorld;
-    private final WorldRenderer worldRenderer;
-
-
 
     public GameScreen(StickmanGame game) {
         this.game = game;
-
         this.state = GAME_READY;
-
-        this.worldListener = new StickmanWorld.WorldListener() {
-            @Override
-            public void jump() {
-                //Assets.playSound(Assets.jumpSound);
-            }
-
-            @Override
-            public void highJump() {
-                //Assets.playSound(Assets.highJumpSound);
-            }
-
-            @Override
-            public void hit() {
-                //Assets.playSound(Assets.hitSound);
-            }
-
-            @Override
-            public void coin() {
-                //Assets.playSound(Assets.coinSound);
-            }
-        };
-
-
-
-        this.stickmanWorld = new StickmanWorld(worldListener);
-        this.worldRenderer = new WorldRenderer(game.batcher, stickmanWorld);
+        this.stickmanWorld = new StickmanWorld(game.batcher);
     }
 
     @Override
@@ -75,14 +44,14 @@ public class GameScreen extends ScreenAdapter {
 
     public void update(float deltaTime) {
         if (deltaTime > 0.1f) deltaTime = 0.1f;
-        worldRenderer.update(deltaTime);
+        stickmanWorld.update(deltaTime);
     }
 
 
     public void draw() {
         Gdx.gl.glClearColor(0.6f, 0, 1, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        worldRenderer.render();
+        stickmanWorld.worldRenderer.render();
     }
 
 

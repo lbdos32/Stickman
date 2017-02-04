@@ -1,5 +1,7 @@
 package com.thesullies;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -17,8 +19,9 @@ public class Assets {
     public static Animation<TextureRegion> attack_1_Animation;
     public static Animation<TextureRegion> runAnimation;
     public static Animation<TextureRegion> coinAnimation;
-    public static TiledMap map = null;
     public static float unitScale = 1 / 8f;
+    public static Sound materialise = null;
+    public static Sound coinCollect = null;
 
     public static void load() {
         TextureRegion[] idleFrames = new TextureRegion[8];
@@ -41,10 +44,15 @@ public class Assets {
             runFrames[i] = new TextureRegion(new Texture(fileName));
         }
         runAnimation = new Animation(ANIMATION_SPEED, runFrames);
-
         loadCoinAnimation();
+        loadMap(0);
 
-        loadMap();
+        loadSounds();
+    }
+
+    private static void loadSounds() {
+        materialise = Gdx.audio.newSound(Gdx.files.internal("sounds/materialise.wav"));
+        coinCollect = Gdx.audio.newSound(Gdx.files.internal("sounds/coinCollect.wav"));
     }
 
     private static void loadCoinAnimation() {
@@ -56,7 +64,7 @@ public class Assets {
         coinAnimation = new Animation(ANIMATION_SPEED, coinFrames);
     }
 
-    private static void loadMap() {
-        map = new TmxMapLoader().load("levels/level_00.tmx");
+    public static TiledMap loadMap(int level) {
+        return new TmxMapLoader().load(String.format("levels/level_%02d.tmx", level));
     }
 }
