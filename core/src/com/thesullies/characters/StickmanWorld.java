@@ -1,6 +1,7 @@
 package com.thesullies.characters;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 
@@ -8,67 +9,69 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
-import com.badlogic.gdx.physics.box2d.Contact;
-import com.badlogic.gdx.physics.box2d.ContactImpulse;
-import com.badlogic.gdx.physics.box2d.ContactListener;
-import com.badlogic.gdx.physics.box2d.Fixture;
-import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
 import com.thesullies.Assets;
 import com.thesullies.maps.Box2DContactListener;
 import com.thesullies.maps.Constants;
-import com.thesullies.maps.MapBodyBuilder;
+import com.thesullies.maps.LevelMapManager;
+import com.thesullies.screens.GamePlayingScreen;
 
 /**
+ * This class manages the game when playing the levels.
+ * It contains both the physics world and the rendered world.
+ * The Physics World  contains the physics entities, platforms, exits, coin shapes etc.
+ * The Rendered World is responsible for drawing these entities.
+ * <p>
  * Created by kosullivan on 04/01/2017.
  */
-
 public class StickmanWorld {
 
-
     // Kees list of characters to add/remove from the game
-    public static CharacterManager characterManager = new CharacterManager();
+    static CharacterManager characterManager = new CharacterManager();
 
-    public static final int WORLD_STATE_RUNNING = 0;
-    public static final int WORLD_STATE_NEXT_LEVEL = 1;
-    public static final int WORLD_STATE_GAME_OVER = 2;
-    public static final Vector2 gravity = new Vector2(0, -12);
+    private Stickman stickman;
 
-    public final Stickman stickman;
-    private final Random rand;
-    private final int state;
-    // Physics Box2d World
-    protected World physicsWorld;
     public static List<Coin> coins;
-    int level=0;
-    public WorldRenderer worldRenderer;
+    int level = 0;
     private SpriteBatch batcher;
 
+    long levelTimeStart;
+
+    // Physics Box2d World
+    World physicsWorld;
+    public WorldRenderer renderedWorld;
+    private LevelMapManager levelMapManager;
+
+
     public StickmanWorld(SpriteBatch batcher) {
+        this.batcher = batcher;
+        levelMapManager = new LevelMapManager();
+        startNewLevel();
+    }
+
+    private void startNewLevel() {
+        this.coins = new ArrayList<Coin>();
         this.physicsWorld = new com.badlogic.gdx.physics.box2d.World(new Vector2(0, Constants.PHYSICS_GRAVITY), true);
         this.physicsWorld.setContactListener(new Box2DContactListener());
-        this.stickman = new Stickman(WorldRenderer.GAME_WIDTH / 2, WorldRenderer.GAME_HEIGHT, this.physicsWorld);
-        this.coins = new ArrayList<Coin>();
-        this.rand = new Random();
-        this.batcher = batcher;
-        loadLevel();
-        this.state = WORLD_STATE_RUNNING;
+        try {
+            levelMapManager.loadLevel(this.level, this.physicsWorld);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        this.renderedWorld = new WorldRenderer(this.batcher, this, this.levelMapManager.getLevelMap());
+        this.stickman = new Stickman(WorldRenderer.GAME_WIDTH / 2, WorldRenderer.GAME_HEIGHT, this.physicsWorld, this.levelMapManager);
+        this.levelTimeStart = System.currentTimeMillis();
         Assets.materialise.play(1.0f);
     }
 
-    private void loadLevel() {
 
-        this.worldRenderer = new WorldRenderer(this.batcher, this, Assets.loadMap(this.level));
-    }
     public void update(float deltaTime) {
 
-        worldRenderer.update(deltaTime);
+        renderedWorld.inputController.getUserInput();
 
-        if (characterManager.entitiesToRemove.size()>0)
+        if (characterManager.entitiesToRemove.size() > 0)
             Assets.coinCollect.play(0.55f);
-        for (GameObject entity : characterManager.entitiesToRemove)
-        {
+        for (GameObject entity : characterManager.entitiesToRemove) {
             if (entity instanceof Coin) {
                 this.coins.remove(entity);
             }
@@ -76,16 +79,23 @@ public class StickmanWorld {
         }
         characterManager.entitiesToRemove.clear();
 
+        this.physicsWorld.step(1f / 60f, 6, 2);
 
-        this.physicsWorld.step(1f/60f, 6, 2);
-
-        updateStickman(deltaTime, worldRenderer.inputDirection, worldRenderer.jumpPressed);
+        updateStickman(deltaTime, renderedWorld.inputController.inputDirection, renderedWorld.inputController.jumpPressed);
         updateCoins(deltaTime);
 
-        if (this.stickman.isTouchingDoor()) {
-            level++;
-            loadLevel();
+        if (this.stickman.isTouchingDoor() ) { //&& this.coins.size()==0) {
+            showLevelCompleteScreen();
         }
+    }
+
+    public void showLevelCompleteScreen() {
+        GamePlayingScreen.game.setLevelCompleteScreen();
+    }
+
+    public void gotoNextLevel() {
+        level++;
+        startNewLevel();
     }
 
     private void updateCoins(float deltaTime) {
@@ -98,4 +108,12 @@ public class StickmanWorld {
         stickman.update(deltaTime, inputDirection, jumpPressed);
     }
 
+    /**
+     * Get the Rendered World to redisplay itself.
+     */
+    public void render() {
+        Gdx.gl.glClearColor(0.6f, 0, 1, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        this.renderedWorld.render(stickman, levelMapManager.getBoundingRectCamera());
+    }
 }

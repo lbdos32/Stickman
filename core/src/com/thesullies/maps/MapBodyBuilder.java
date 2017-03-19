@@ -28,9 +28,9 @@ import com.thesullies.characters.Coin;
 import com.thesullies.characters.StickmanWorld;
 
 /**
- * Created by kosullivan on 16/01/2017.
+ * Creates the box2d physical elements from the Tiled map object loaded.
+ * <p>The physics elements are in a platform layer called Objects (Constants.MAP_LAYER_OBJECTS)</p>
  */
-
 public class MapBodyBuilder {
 
     // The pixels per tile. If your tiles are 16x16, this is set to 16f

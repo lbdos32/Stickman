@@ -19,7 +19,6 @@ public class Assets {
     public static Animation<TextureRegion> attack_1_Animation;
     public static Animation<TextureRegion> runAnimation;
     public static Animation<TextureRegion> coinAnimation;
-    public static float unitScale = 1 / 8f;
     public static Sound materialise = null;
     public static Sound coinCollect = null;
 
@@ -45,8 +44,6 @@ public class Assets {
         }
         runAnimation = new Animation(ANIMATION_SPEED, runFrames);
         loadCoinAnimation();
-        loadMap(0);
-
         loadSounds();
     }
 
@@ -64,7 +61,4 @@ public class Assets {
         coinAnimation = new Animation(ANIMATION_SPEED, coinFrames);
     }
 
-    public static TiledMap loadMap(int level) {
-        return new TmxMapLoader().load(String.format("levels/level_%02d.tmx", level));
-    }
 }

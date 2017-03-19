@@ -21,68 +21,60 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
-import com.badlogic.gdx.physics.box2d.World;
 import com.thesullies.Assets;
+import com.thesullies.InputController;
 import com.thesullies.maps.Constants;
+import com.thesullies.maps.LevelMapManager;
 import com.thesullies.maps.MapBodyBuilder;
 
-import static com.badlogic.gdx.Input.Keys.DOWN;
-import static com.badlogic.gdx.Input.Keys.LEFT;
-import static com.badlogic.gdx.Input.Keys.RIGHT;
-import static com.badlogic.gdx.Input.Keys.UP;
 
+/**
+ * This class is responsible for
+ * <p>
+ * - displaying all the platform graphics onscreen,
+ * - displaying Stickman, coins, food baddies etc.
+ * - displaying score & timecountdown.
+ * - Getting user input
+ */
 public class WorldRenderer {
 
     public static final int GAME_WIDTH = 120;
     public static final int GAME_HEIGHT = 80;
 
-
     StickmanWorld stickmanWorld;
     public static OrthographicCamera guiCam;
     SpriteBatch batch;
     SpriteBatch debugBatch;
+
+    SpriteBatch gameStatusBatch;
+    BitmapFont gameStatusFont;
+
     private OrthogonalTiledMapRenderer mapRenderer;
-    private ShapeRenderer shapeRenderer;
 
-    Vector2 controlStickNeutral;
-    Vector2 controlStickJump;
 
-    private final int displayWidth;
-    private final int displayHeight;
-
-    private int constrolStickRadius;
-    private int constrolStickNeutralRadius;
-    Vector2 inputDirection;
-    public boolean jumpPressed;
-    Rectangle boundingRectCamera;
-    public static Rectangle boundingRectStickman;
     BitmapFont font = null;
     public static boolean debugOutput = true;
     BitmapFont debugFont = null;
 
-    private final Rectangle rectLeftControl;
-    private final Rectangle rectRightControl;
-    private final Rectangle rectUpControl;
-    private final Rectangle rectDownControl;
-    private final Rectangle rectJumpControl;
-
-
-    public static float mapCellSize;
-
     Matrix4 debugMatrix;
     Box2DDebugRenderer debugRenderer;
 
+    InputController inputController;
+
+    private int displayWidth, displayHeight;
 
     public WorldRenderer(SpriteBatch batch, StickmanWorld stickmanWorld, TiledMap map) {
         this.stickmanWorld = stickmanWorld;
+
+        this.displayWidth = Gdx.graphics.getWidth();
+        this.displayHeight = Gdx.graphics.getHeight();
+
 
         guiCam = new OrthographicCamera();
         guiCam.setToOrtho(false, GAME_WIDTH, GAME_HEIGHT);
@@ -90,36 +82,12 @@ public class WorldRenderer {
         guiCam.zoom = 1.0f;
         guiCam.update();
 
-        this.displayWidth = Gdx.graphics.getWidth();
-        this.displayHeight = Gdx.graphics.getHeight();
-        this.shapeRenderer = new ShapeRenderer();
+        this.mapRenderer = new OrthogonalTiledMapRenderer(map, LevelMapManager.MAP_UNIT_SCALE);
 
-        controlStickNeutral = new Vector2(displayWidth / 10, displayHeight / 6);
-        controlStickJump = new Vector2(displayWidth - displayWidth / 10, displayHeight / 6);
-        constrolStickRadius = displayWidth / 10;
-        constrolStickNeutralRadius = displayWidth / 30;
-
-        this.rectLeftControl = new Rectangle(displayWidth / 10 - constrolStickRadius, displayHeight / 6, constrolStickRadius, constrolStickRadius);
-        this.rectRightControl = new Rectangle(displayWidth / 10 + constrolStickRadius, displayHeight / 6, constrolStickRadius, constrolStickRadius);
-        this.rectUpControl = new Rectangle(displayWidth / 10, constrolStickRadius + displayHeight / 6, constrolStickRadius, constrolStickRadius);
-        this.rectDownControl = new Rectangle(displayWidth / 10, displayHeight / 6 - constrolStickRadius, constrolStickRadius, constrolStickRadius);
-        this.rectJumpControl = new Rectangle(displayWidth - displayWidth / 10, displayHeight / 6, constrolStickRadius, constrolStickRadius);
-
-        this.mapRenderer = new OrthogonalTiledMapRenderer(map, Assets.unitScale);
-        this.shapeRenderer = new ShapeRenderer();
-
-        //this.cam = new OrthographicCamera(FRUSTUM_WIDTH, FRUSTUM_HEIGHT);
-        //this.cam.position.set(FRUSTUM_WIDTH / 2, FRUSTUM_HEIGHT / 2, 0);
-        this.batch = batch; // /new SpriteBatch();
+        this.batch = batch;
         debugBatch = new SpriteBatch();
+        gameStatusBatch = new SpriteBatch();
 
-        inputDirection = new Vector2();
-
-        TiledMapTileLayer layer = (TiledMapTileLayer) map.getLayers().get(Constants.MAP_LAYER_PLATFORM);
-        mapCellSize = layer.getTileHeight();
-        boundingRectCamera = new Rectangle(WorldRenderer.GAME_WIDTH / 2, WorldRenderer.GAME_HEIGHT / 2, layer.getWidth() * layer.getTileWidth() * Assets.unitScale - WorldRenderer.GAME_WIDTH / 2, layer.getHeight() * layer.getTileHeight() * Assets.unitScale - WorldRenderer.GAME_HEIGHT / 2);
-
-        boundingRectStickman = new Rectangle(0, 0, layer.getWidth() * layer.getTileWidth() * Assets.unitScale, layer.getHeight() * layer.getTileHeight() * Assets.unitScale);
 
         font = new BitmapFont();
         font.setColor(Color.GREEN);
@@ -128,85 +96,64 @@ public class WorldRenderer {
         debugFont.setColor(Color.WHITE);
         debugFont.getData().setScale(2.0f);
 
+        this.gameStatusFont = new BitmapFont();
+        this.gameStatusFont.setColor(Color.WHITE);
+        this.gameStatusFont.getData().setScale(3.0f);
+
+
         debugRenderer = new Box2DDebugRenderer();
 
-        // Load the data from the ObjectLayer in the map
-        MapBodyBuilder.buildShapes(map, mapCellSize * Assets.unitScale * 2, stickmanWorld.physicsWorld);
+        inputController = new InputController(displayWidth, displayHeight);
     }
 
 
-    /**
-     * Called each game loop to get input from the user and update the position of the stickman
-     * and all game components.
-     *
-     * @param deltaTime
-     */
-    public void update(float deltaTime) {
-        getUserInput();
-    }
+    public void render(Stickman stickman, Rectangle boundingRectCamera) {
 
-
-    /**
-     * Detect where on the screen the user has pressed and if this corresponds to up/down/left/right movement.
-     */
-    private void getUserInput() {
-
-        this.inputDirection.x = -1;
-        this.inputDirection.y = -1;
-        this.jumpPressed = false;
-        if (Gdx.input.isTouched()) {
-            //guiCam.unproject(touchPoint.set(Gdx.input.getX(), Gdx.input.getY(), 0));
-
-            for (int i = 0; i < 10; i++) {
-                if (Gdx.input.isTouched(i)) {
-                    int inputY = displayHeight - Gdx.input.getY(i);
-                    int inputX = Gdx.input.getX(i);
-                    checkInput(inputX, inputY);
-                }
-            }
-        }
-    }
-
-    private void checkInput(int inputX, int inputY) {
-        if (rectDownControl.contains(inputX, inputY))
-            inputDirection.y = DOWN;
-        else if (rectUpControl.contains(inputX, inputY))
-            inputDirection.y = UP;
-
-        if (rectLeftControl.contains(inputX, inputY))
-            inputDirection.x = LEFT;
-        else if (rectRightControl.contains(inputX, inputY))
-            inputDirection.x = RIGHT;
-
-        if (rectJumpControl.contains(inputX, inputY))
-            jumpPressed = true;
-    }
-
-
-    public void render() {
-
-        updateCam();
+        updateCam(stickman, boundingRectCamera);
         batch.setProjectionMatrix(guiCam.combined);
         debugMatrix = batch.getProjectionMatrix().cpy().scale(Constants.PHYSICS_PIXELS_TO_METERS,
                 Constants.PHYSICS_PIXELS_TO_METERS, 0);
         renderMap();
-        renderInputControls();
-        renderObjects();
-        renderDebug();
+        inputController.renderInputControls();
+        renderObjects(stickman);
+        renderStatus(stickman);
+        renderDebug(stickman);
         debugRenderer.render(this.stickmanWorld.physicsWorld, debugMatrix);
     }
 
-    private void renderDebug() {
+    private void renderStatus(Stickman stickman) {
+        this.gameStatusBatch.begin();
+        this.gameStatusFont.draw(this.gameStatusBatch, String.format("Level: %d", this.stickmanWorld.level), displayWidth - 500, displayHeight - 20);
+
+        this.gameStatusFont.draw(this.gameStatusBatch, String.format("Time:  %d", this.secondsSinceLevelStart()), displayWidth - 500, displayHeight - 60);
+        if (this.stickmanWorld.coins.size() > 0)
+            this.gameStatusFont.draw(this.gameStatusBatch, String.format("Remaining coins: %d", this.stickmanWorld.coins.size()), displayWidth - 500, displayHeight - 100);
+        else
+            this.gameStatusFont.draw(this.gameStatusBatch, String.format("Find the exit!"), displayWidth - 500, displayHeight - 100);
+        this.gameStatusBatch.end();
+    }
+
+    private int secondsSinceLevelStart() {
+        long now = System.currentTimeMillis();
+        return (int)((now - this.stickmanWorld.levelTimeStart) / 1000);
+    }
+
+    private void renderDebug(Stickman stickman) {
         if (debugOutput) {
             debugBatch.begin();
-            debugFont.draw(debugBatch, stickmanWorld.stickman.toString(), 1, displayHeight - 20);
+            debugFont.draw(debugBatch, stickman.toString(), 1, displayHeight - 20);
             debugBatch.end();
         }
     }
 
-    private void updateCam() {
-        guiCam.position.x = stickmanWorld.stickman.position.x;
-        guiCam.position.y = stickmanWorld.stickman.position.y;
+    /**
+     * The camera will follow the stickman around.
+     *
+     * @param stickman
+     */
+    private void updateCam(Stickman stickman, Rectangle boundingRectCamera) {
+        guiCam.position.x = stickman.position.x;
+        guiCam.position.y = stickman.position.y;
 
         if (guiCam.position.x <= boundingRectCamera.getX())
             guiCam.position.x = boundingRectCamera.getX();
@@ -221,87 +168,23 @@ public class WorldRenderer {
     }
 
 
-    public void renderObjects() {
+    public void renderObjects(Stickman stickman) {
         batch.enableBlending();
         batch.begin();
-        renderStickman();
+        renderStickman(stickman);
         renderCoins();
         font.draw(batch, "Stickman go --->", 1, GAME_HEIGHT - 4); //displayHeight-20);
         batch.end();
     }
 
-    private void renderInputControls() {
-        shapeRenderer.setColor(Color.RED);
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.circle(this.controlStickNeutral.x, controlStickNeutral.y, constrolStickNeutralRadius);
-        drawJumpController();
-
-        drawRightController();
-        drawUpController();
-        drawLeftController();
-        drawDownController();
-
-
-        shapeRenderer.end();
-
-    }
-
-    private void drawJumpController() {
-//        shapeRenderer.circle(this.controlStickJump.x, controlStickJump.y, constrolStickNeutralRadius);
-        if (this.jumpPressed)
-            shapeRenderer.setColor(Color.BLUE);
-        else
-            shapeRenderer.setColor(Color.WHITE);
-
-        shapeRenderer.rect(rectJumpControl.x, rectJumpControl.y, rectJumpControl.width, rectJumpControl.height);
-
-    }
-
-
-    private void drawDownController() {
-        if (inputDirection.y == DOWN)
-            shapeRenderer.setColor(Color.BLUE);
-        else
-            shapeRenderer.setColor(Color.WHITE);
-        //shapeRenderer.arc(this.controlStickNeutral.x, controlStickNeutral.y, constrolStickRadius, 270 - 15, 30);
-        shapeRenderer.rect(rectDownControl.x, rectDownControl.y, rectDownControl.width, rectDownControl.height);
-    }
-
-    private void drawLeftController() {
-        if (inputDirection.x == LEFT)
-            shapeRenderer.setColor(Color.BLUE);
-        else
-            shapeRenderer.setColor(Color.WHITE);
-        //shapeRenderer.arc(this.controlStickNeutral.x, controlStickNeutral.y, constrolStickRadius, 180 - 15, 30);
-        shapeRenderer.rect(rectLeftControl.x, rectLeftControl.y, rectLeftControl.width, rectLeftControl.height);
-    }
-
-    private void drawUpController() {
-        if (inputDirection.y == UP)
-            shapeRenderer.setColor(Color.BLUE);
-        else
-            shapeRenderer.setColor(Color.WHITE);
-//        shapeRenderer.arc(this.controlStickNeutral.x, controlStickNeutral.y, constrolStickRadius, 90 - 15, 30);
-        shapeRenderer.rect(rectUpControl.x, rectUpControl.y, rectUpControl.width, rectUpControl.height);
-    }
-
-    private void drawRightController() {
-        if (inputDirection.x == RIGHT)
-            shapeRenderer.setColor(Color.BLUE);
-        else
-            shapeRenderer.setColor(Color.WHITE);
-//        shapeRenderer.arc(this.controlStickNeutral.x, controlStickNeutral.y, constrolStickRadius, 360 - 15, 30);
-        shapeRenderer.rect(rectRightControl.x, rectRightControl.y, rectRightControl.width, rectRightControl.height);
-
-    }
 
     private void renderMap() {
         mapRenderer.setView(guiCam);
         mapRenderer.render();
     }
 
-    private void renderStickman() {
-        stickmanWorld.stickman.render(this.batch);
+    private void renderStickman(Stickman stickman) {
+        stickman.render(this.batch);
     }
 
     private void renderCoins() {
@@ -309,37 +192,4 @@ public class WorldRenderer {
             coin.render(this.batch);
         }
     }
-/*
-    private void renderItems () {
-		int len = world.springs.size();
-		for (int i = 0; i < len; i++) {
-			Spring spring = world.springs.get(i);
-			batch.draw(Assets.spring, spring.position.x - 0.5f, spring.position.y - 0.5f, 1, 1);
-		}
-
-		len = world.coins.size();
-		for (int i = 0; i < len; i++) {
-			Coin coin = world.coins.get(i);
-			TextureRegion keyFrame = Assets.coinAnim.getKeyFrame(coin.stateTime, Animation.ANIMATION_LOOPING);
-			batch.draw(keyFrame, coin.position.x - 0.5f, coin.position.y - 0.5f, 1, 1);
-		}
-	}
-
-	private void renderSquirrels () {
-		int len = world.squirrels.size();
-		for (int i = 0; i < len; i++) {
-			Squirrel squirrel = world.squirrels.get(i);
-			TextureRegion keyFrame = Assets.squirrelFly.getKeyFrame(squirrel.stateTime, Animation.ANIMATION_LOOPING);
-			float side = squirrel.velocity.x < 0 ? -1 : 1;
-			if (side < 0)
-				batch.draw(keyFrame, squirrel.position.x + 0.5f, squirrel.position.y - 0.5f, side * 1, 1);
-			else
-				batch.draw(keyFrame, squirrel.position.x - 0.5f, squirrel.position.y - 0.5f, side * 1, 1);
-		}
-	}
-
-	private void renderCastle () {
-		Castle castle = world.castle;
-		batch.draw(Assets.castle, castle.position.x - 1, castle.position.y - 1, 2, 2);
-	}*/
 }

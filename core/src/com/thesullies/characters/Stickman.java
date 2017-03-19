@@ -5,26 +5,20 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.MapObject;
-import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.Contact;
-import com.badlogic.gdx.physics.box2d.EdgeShape;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
-import com.badlogic.gdx.utils.Array;
 import com.thesullies.Assets;
+import com.thesullies.InputController;
 import com.thesullies.maps.Constants;
 import com.badlogic.gdx.physics.box2d.World;
+import com.thesullies.maps.LevelMapManager;
 import com.thesullies.maps.MapBodyBuilder;
-
-import static com.badlogic.gdx.Input.Keys.DOWN;
-import static com.badlogic.gdx.Input.Keys.LEFT;
-import static com.badlogic.gdx.Input.Keys.RIGHT;
 
 /**
  * Created by kosullivan on 04/01/2017.
@@ -37,8 +31,6 @@ public class Stickman extends DynamicGameObject {
     public static final int STICKMAN_HITBOX_WIDTH = 2;
     public static final int STICKMAN_HITBOX_HEIGHT = 5;
 
-    private static final int STICKMAN_HORIZONTAL_SPEED = 40;
-    private static final int STICKMAN_VERTICAL_JUMP = 60;
 
 
     private static final int MAX_LINEAR_VELOCITY_X = 5;
@@ -51,14 +43,14 @@ public class Stickman extends DynamicGameObject {
 
     ShapeRenderer debugShapeRenderer = null;
     private int touchingPlatformCount = 0;
-
-
     private boolean touchingDoor = false;
-
+    /**
+     * True if moving left - used to flip the bitmap image depending on direction of movement.
+     */
+    private boolean movingLeft;
 
     public enum STICKMAN_STATES {
         IDLE("IDLE"),
-        RUNNING("RUNNING"),
         FALLING("FALLING"),
         JUMPING("JUMPING");
         private final String name;
@@ -80,9 +72,20 @@ public class Stickman extends DynamicGameObject {
 
     Vector2 gravity = new Vector2(0, -2);
     Rectangle stickmanHitBox;
+    /**
+     * Holds data on the current level the stickman is playing in
+     */
+    LevelMapManager levelMapManager;
 
 
-    public Stickman(float x, float y, World world) {
+    /**
+     *
+     * @param x - where to start the stickman in the world
+     * @param y - where to start the stickman in the world
+     * @param world - Box2D physics world
+     * @param levelMapManager - copy of the levelMapManager
+     */
+    public Stickman(float x, float y, World world, LevelMapManager levelMapManager) {
         super(x, y, STICKMAN_SPRITE_WIDTH, STICKMAN_SPRITE_HEIGHT);
         state = STICKMAN_STATES.IDLE;
         stateTime = 0;
@@ -90,6 +93,7 @@ public class Stickman extends DynamicGameObject {
 
         debugShapeRenderer = new ShapeRenderer();
         debugShapeRenderer.setAutoShapeType(true);
+        this.levelMapManager = levelMapManager;
 
         createPhysicalBody(world);
     }
@@ -131,22 +135,16 @@ public class Stickman extends DynamicGameObject {
 
         TextureRegion keyFrame;
 
-        boolean flip = this.physicsBody.getLinearVelocity().x < 0;
         if (isMovingHorizontally()) {
             keyFrame = Assets.runAnimation.getKeyFrame(this.stateTime, true);
-            batch.draw(keyFrame, flip ? this.position.x + Stickman.STICKMAN_SPRITE_WIDTH : this.position.x, this.position.y, flip ? -Stickman.STICKMAN_SPRITE_WIDTH : Stickman.STICKMAN_SPRITE_WIDTH, Stickman.STICKMAN_SPRITE_HEIGHT);
+            batch.draw(keyFrame, movingLeft ? this.position.x + Stickman.STICKMAN_SPRITE_WIDTH : this.position.x, this.position.y, movingLeft ? -Stickman.STICKMAN_SPRITE_WIDTH : Stickman.STICKMAN_SPRITE_WIDTH, Stickman.STICKMAN_SPRITE_HEIGHT);
         } else {
 
             switch (this.state) {
-                case RUNNING:
-
-                    break;
-
-
                 case IDLE:
                 default:
                     keyFrame = Assets.idleAnimation.getKeyFrame(this.stateTime, true);
-                    batch.draw(keyFrame, flip ? this.position.x + Stickman.STICKMAN_SPRITE_WIDTH : this.position.x, this.position.y, flip ? -Stickman.STICKMAN_SPRITE_WIDTH : Stickman.STICKMAN_SPRITE_WIDTH, Stickman.STICKMAN_SPRITE_HEIGHT);
+                    batch.draw(keyFrame, movingLeft ? this.position.x + Stickman.STICKMAN_SPRITE_WIDTH : this.position.x, this.position.y, movingLeft ? -Stickman.STICKMAN_SPRITE_WIDTH : Stickman.STICKMAN_SPRITE_WIDTH, Stickman.STICKMAN_SPRITE_HEIGHT);
             }
         }
     }
@@ -158,21 +156,15 @@ public class Stickman extends DynamicGameObject {
         this.position.y = (physicsBody.getPosition().y * Constants.PHYSICS_PIXELS_TO_METERS) - 5.5f;
         stateTime += deltaTime;
 
-        if (inputDirection.x == LEFT) {
+        if (inputDirection.x == InputController.LEFT) {
             if (this.physicsBody.getLinearVelocity().x > -MAX_LINEAR_VELOCITY_X) {
                 Vector2 vec = new Vector2(-1f, 0f);
                 this.physicsBody.applyLinearImpulse(vec, this.physicsBody.getWorldCenter(), true);
             }
-            if (!isFalling()) {
-                state = STICKMAN_STATES.RUNNING;
-            }
-        } else if (inputDirection.x == RIGHT) {
+        } else if (inputDirection.x == InputController.RIGHT) {
             if (this.physicsBody.getLinearVelocity().x < MAX_LINEAR_VELOCITY_X) {
                 Vector2 vec = new Vector2(1f, 0f);
                 this.physicsBody.applyLinearImpulse(vec, this.physicsBody.getWorldCenter(), true);
-            }
-            if (!isFalling()) {
-                state = STICKMAN_STATES.RUNNING;
             }
         } else {
 /*
@@ -188,15 +180,19 @@ public class Stickman extends DynamicGameObject {
             }
         }
 
+        if (isMovingHorizontally()) {
+            this.movingLeft = this.physicsBody.getLinearVelocity().x <0;
+        }
+
         if (jump && isTouchingPlatform()) {
             Gdx.app.debug(Constants.LOG_TAG, "Jump!");
             Vector2 vec = new Vector2(0f, JUMP_IMPULSE);
             this.physicsBody.applyLinearImpulse(vec, this.physicsBody.getWorldCenter(), true);
         }
 
-        if (this.physicsBody.getLinearVelocity().y < 0)
+        if (this.physicsBody.getLinearVelocity().y < -0.01f)
             state = STICKMAN_STATES.FALLING;
-        else if (this.physicsBody.getLinearVelocity().y > 0)
+        else if (this.physicsBody.getLinearVelocity().y > 0.01f)
             state = STICKMAN_STATES.JUMPING;
         else
             state = STICKMAN_STATES.IDLE;
@@ -209,26 +205,27 @@ public class Stickman extends DynamicGameObject {
      * @return
      */
     private boolean isMovingHorizontally() {
-        return this.physicsBody.getLinearVelocity().x!=0 && this.physicsBody.getLinearVelocity().x<STICKMAN_LOW_VELOCITY_THRESHOLD && this.physicsBody.getLinearVelocity().x>-STICKMAN_LOW_VELOCITY_THRESHOLD;
+        return this.physicsBody.getLinearVelocity().x!=0 &&
+                (this.physicsBody.getLinearVelocity().x<-STICKMAN_LOW_VELOCITY_THRESHOLD ||
+                this.physicsBody.getLinearVelocity().x>-STICKMAN_LOW_VELOCITY_THRESHOLD);
     }
 
     /**
      * Make sure the stickman can't go off the map.
      */
     private void checkPositionLimits() {
-        if (this.position.x <= WorldRenderer.boundingRectStickman.getX())
-            this.physicsBody.getPosition().x = WorldRenderer.boundingRectStickman.getX();
-        if (this.position.x > WorldRenderer.boundingRectStickman.getWidth())
-            this.physicsBody.getPosition().x = WorldRenderer.boundingRectStickman.getWidth();
+        if (this.position.x <= levelMapManager.levelBoundingRectStickman.getX())
+            this.physicsBody.getPosition().x = levelMapManager.levelBoundingRectStickman.getX();
+        if (this.position.x > levelMapManager.levelBoundingRectStickman.getWidth())
+            this.physicsBody.getPosition().x = levelMapManager.levelBoundingRectStickman.getWidth();
 
-        if (this.position.y + STICKMAN_HITBOX_HEIGHT / 2 <= WorldRenderer.boundingRectStickman.getY()) {
-            this.physicsBody.setTransform(this.physicsBody.getPosition().x, WorldRenderer.boundingRectStickman.getY() + STICKMAN_HITBOX_HEIGHT / 2 / Constants.PHYSICS_PIXELS_TO_METERS, 0);
-//            /this.position.y = WorldRenderer.boundingRectStickman.getY()-STICKMAN_HITBOX_HEIGHT/2;
+        if (this.position.y + STICKMAN_HITBOX_HEIGHT / 2 <= levelMapManager.levelBoundingRectStickman.getY()) {
+            this.physicsBody.setTransform(this.physicsBody.getPosition().x, levelMapManager.levelBoundingRectStickman.getY() + STICKMAN_HITBOX_HEIGHT / 2 / Constants.PHYSICS_PIXELS_TO_METERS, 0);
             stopFalling();
         }
 
-        if (this.position.y > WorldRenderer.boundingRectStickman.getHeight())
-            this.physicsBody.getPosition().y = WorldRenderer.boundingRectStickman.getHeight();
+        if (this.position.y > levelMapManager.levelBoundingRectStickman.getHeight())
+            this.physicsBody.getPosition().y = levelMapManager.levelBoundingRectStickman.getHeight();
     }
 
     private boolean isTouchingPlatform() {
@@ -237,7 +234,6 @@ public class Stickman extends DynamicGameObject {
 
 
     private void stopFalling() {
-
         if (isJumping() || isFalling()) {
             state = STICKMAN_STATES.IDLE;
         }
@@ -253,18 +249,6 @@ public class Stickman extends DynamicGameObject {
     private boolean isJumping() {
         if (state.equals(STICKMAN_STATES.JUMPING))
             return true;
-        return false;
-    }
-
-    /**
-     * Is the character allowed to jump in current state.
-     *
-     * @return
-     */
-    private boolean isJumpAllowed() {
-        if (state.equals(STICKMAN_STATES.IDLE) || state.equals(STICKMAN_STATES.RUNNING))
-            return true;
-
         return false;
     }
 
@@ -336,10 +320,6 @@ public class Stickman extends DynamicGameObject {
 
     public boolean isTouchingDoor() {
         return touchingDoor;
-    }
-
-    public void setTouchingDoor(boolean touchingDoor) {
-        this.touchingDoor = touchingDoor;
     }
 
 }
