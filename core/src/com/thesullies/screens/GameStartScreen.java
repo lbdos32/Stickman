@@ -24,6 +24,8 @@ public class GameStartScreen extends ScreenAdapter {
     GlyphLayout glyphLayout;
 
 
+    float red=0.1f, green=0.8f, blue = 0.7f;
+
     float textYOffset = 0f;
 
 
@@ -105,7 +107,7 @@ public class GameStartScreen extends ScreenAdapter {
 
     public void draw() {
 
-        Gdx.gl.glClearColor(0.5f, 0.5f, 0.5f, 1);
+        Gdx.gl.glClearColor(red, green, blue, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         this.batch.begin();
 
