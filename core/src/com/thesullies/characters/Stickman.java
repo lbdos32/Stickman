@@ -31,9 +31,11 @@ public class Stickman extends DynamicGameObject {
     public static final int STICKMAN_HITBOX_WIDTH = 2;
     public static final int STICKMAN_HITBOX_HEIGHT = 5;
 
+    public static final int STICKMAN_SPAWN_X = 10;
+    public static final int STICKMAN_SPAWN_Y = 100;
 
 
-    private static final int MAX_LINEAR_VELOCITY_X = 5;
+    private static final int MAX_LINEAR_VELOCITY_X = 4;
     private static final float JUMP_IMPULSE = 2f;
     private static final int STICKMAN_LINEAR_DAMPING = 2;
     private static final float STICKMAN_GRAVITY_SCALE = 2f;
@@ -102,8 +104,8 @@ public class Stickman extends DynamicGameObject {
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.DynamicBody;
         bodyDef.position.set(
-                (50 + STICKMAN_SPRITE_WIDTH / 2) / Constants.PHYSICS_PIXELS_TO_METERS,
-                (20 + STICKMAN_SPRITE_HEIGHT / 2) / Constants.PHYSICS_PIXELS_TO_METERS);
+                (STICKMAN_SPAWN_X + STICKMAN_SPRITE_WIDTH / 2) / Constants.PHYSICS_PIXELS_TO_METERS,
+                (STICKMAN_SPAWN_Y + STICKMAN_SPRITE_HEIGHT / 2) / Constants.PHYSICS_PIXELS_TO_METERS);
         bodyDef.fixedRotation = true;
 
         this.physicsBody = world.createBody(bodyDef);
