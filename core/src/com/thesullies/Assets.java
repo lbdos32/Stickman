@@ -21,6 +21,7 @@ public class Assets {
     public static Animation<TextureRegion> coinAnimation;
     public static Sound materialise = null;
     public static Sound coinCollect = null;
+    public static Sound levelup = null;
 
     public static void load() {
         TextureRegion[] idleFrames = new TextureRegion[8];
@@ -50,6 +51,7 @@ public class Assets {
     private static void loadSounds() {
         materialise = Gdx.audio.newSound(Gdx.files.internal("sounds/materialise.wav"));
         coinCollect = Gdx.audio.newSound(Gdx.files.internal("sounds/coinCollect.wav"));
+        levelup = Gdx.audio.newSound(Gdx.files.internal("sounds/levelup.wav"));
     }
 
     private static void loadCoinAnimation() {

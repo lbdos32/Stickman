@@ -85,6 +85,7 @@ public class StickmanWorld {
         updateCoins(deltaTime);
 
         if (this.stickman.isTouchingDoor() ) { //&& this.coins.size()==0) {
+            Assets.levelup.play(0.5f);
             showLevelCompleteScreen();
         }
     }
