@@ -26,6 +26,7 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.thesullies.characters.Coin;
 import com.thesullies.characters.StickmanWorld;
+import com.thesullies.characters.WillowTheWisp;
 
 /**
  * Creates the box2d physical elements from the Tiled map object loaded.
@@ -42,7 +43,7 @@ public class MapBodyBuilder {
 
         Array<Body> bodies = new Array<Body>();
 
-        for(MapObject object : objects) {
+        for (MapObject object : objects) {
 
             if (object instanceof TextureMapObject) {
                 continue;
@@ -52,10 +53,19 @@ public class MapBodyBuilder {
             if (object instanceof RectangleMapObject) {
                 shape = getRectangle((RectangleMapObject) object);
 
-                if (MapBodyBuilder.isCoin(object))
-                {
-                    Coin coin = new Coin(((RectangleMapObject) object).getRectangle().getX()/ppt, ((RectangleMapObject) object).getRectangle().getY()/ppt, world);
+                if (MapBodyBuilder.isCoin(object)) {
+                    Coin coin = new Coin(
+                            MapBodyBuilder.getCenterXOfRectangle((RectangleMapObject) object),
+                            MapBodyBuilder.getCenterYOfRectangle((RectangleMapObject) object),
+                            world);
                     StickmanWorld.coins.add(coin);
+                    continue;
+                } else if (MapBodyBuilder.isWillowTheWisp(object)) {
+                    WillowTheWisp wtw = new WillowTheWisp(
+                            MapBodyBuilder.getCenterXOfRectangle((RectangleMapObject) object),
+                            MapBodyBuilder.getCenterYOfRectangle((RectangleMapObject) object),
+                            world);
+                    StickmanWorld.dynamicGameObjects.add(wtw);
                     continue;
                 }
             } else if (object instanceof PolygonMapObject) {
@@ -78,8 +88,15 @@ public class MapBodyBuilder {
 
             Fixture fixture = body.createFixture(shape, 1);
             Object sensor = object.getProperties().get(Constants.PROPERTY_SENSOR);
-            if (isDeath(object) || (sensor != null && sensor instanceof Boolean && ((Boolean)sensor)==true)) {
+            if (isDeath(object) || isWillowTheWisp(object) || (sensor != null && sensor instanceof Boolean && ((Boolean) sensor) == true)) {
                 fixture.setSensor(true);
+            }
+            if (isDoor(object)) {
+                WillowTheWisp wtw = new WillowTheWisp(
+                        MapBodyBuilder.getCenterXOfRectangle((RectangleMapObject) object),
+                        MapBodyBuilder.getBottomOfRectangle((RectangleMapObject) object),
+                        world);
+                StickmanWorld.dynamicGameObjects.add(wtw);
             }
 
             bodies.add(body);
@@ -89,15 +106,24 @@ public class MapBodyBuilder {
         return bodies;
     }
 
+    private static float getCenterXOfRectangle(RectangleMapObject object) {
+        return (object.getRectangle().getX()/ppt)  + (object.getRectangle().getWidth()/2)/ ppt;
+    }
+    private static float getCenterYOfRectangle(RectangleMapObject object) {
+        return (object.getRectangle().getY()  + object.getRectangle().getHeight()/2) / ppt;
+    }
+    private static float getBottomOfRectangle(RectangleMapObject object) {
+        return (object.getRectangle().getY()  ) / ppt;
+    }
 
 
     private static PolygonShape getRectangle(RectangleMapObject rectangleObject) {
         Rectangle rectangle = rectangleObject.getRectangle();
         PolygonShape polygon = new PolygonShape();
         Vector2 size = new Vector2((rectangle.x + rectangle.width * 0.5f) / ppt / Constants.PHYSICS_PIXELS_TO_METERS,
-                (rectangle.y + rectangle.height * 0.5f ) / ppt/ Constants.PHYSICS_PIXELS_TO_METERS);
-        polygon.setAsBox(rectangle.width * 0.5f / ppt/ Constants.PHYSICS_PIXELS_TO_METERS,
-                rectangle.height * 0.5f / ppt/ Constants.PHYSICS_PIXELS_TO_METERS,
+                (rectangle.y + rectangle.height * 0.5f) / ppt / Constants.PHYSICS_PIXELS_TO_METERS);
+        polygon.setAsBox(rectangle.width * 0.5f / ppt / Constants.PHYSICS_PIXELS_TO_METERS,
+                rectangle.height * 0.5f / ppt / Constants.PHYSICS_PIXELS_TO_METERS,
                 size,
                 0.0f);
         return polygon;
@@ -106,19 +132,21 @@ public class MapBodyBuilder {
     private static CircleShape getCircle(CircleMapObject circleObject) {
         Circle circle = circleObject.getCircle();
         CircleShape circleShape = new CircleShape();
-        circleShape.setRadius(circle.radius / ppt/ Constants.PHYSICS_PIXELS_TO_METERS);
-        circleShape.setPosition(new Vector2(circle.x / ppt/ Constants.PHYSICS_PIXELS_TO_METERS, circle.y / ppt/ Constants.PHYSICS_PIXELS_TO_METERS));
+        circleShape.setRadius(circle.radius / ppt / Constants.PHYSICS_PIXELS_TO_METERS);
+        circleShape.setPosition(new Vector2(circle.x / ppt / Constants.PHYSICS_PIXELS_TO_METERS, circle.y / ppt / Constants.PHYSICS_PIXELS_TO_METERS));
         return circleShape;
     }
+
     private static Shape getEllipse(EllipseMapObject ellipseObject) {
 
         Ellipse ellipse = ellipseObject.getEllipse();
         //CircleShape
         CircleShape circleShape = new CircleShape();
-        circleShape.setRadius(ellipse.width/2 / ppt/ Constants.PHYSICS_PIXELS_TO_METERS);
-        circleShape.setPosition(new Vector2((ellipse.x+ellipse.width/2) / ppt / Constants.PHYSICS_PIXELS_TO_METERS, (ellipse.y+ellipse.height/2) / ppt/ Constants.PHYSICS_PIXELS_TO_METERS));
+        circleShape.setRadius(ellipse.width / 2 / ppt / Constants.PHYSICS_PIXELS_TO_METERS);
+        circleShape.setPosition(new Vector2((ellipse.x + ellipse.width / 2) / ppt / Constants.PHYSICS_PIXELS_TO_METERS, (ellipse.y + ellipse.height / 2) / ppt / Constants.PHYSICS_PIXELS_TO_METERS));
         return circleShape;
     }
+
     private static PolygonShape getPolygon(PolygonMapObject polygonObject) {
         PolygonShape polygon = new PolygonShape();
         float[] vertices = polygonObject.getPolygon().getTransformedVertices();
@@ -126,7 +154,7 @@ public class MapBodyBuilder {
         float[] worldVertices = new float[vertices.length];
 
         for (int i = 0; i < vertices.length; ++i) {
-            worldVertices[i] = vertices[i] / ppt/ Constants.PHYSICS_PIXELS_TO_METERS;
+            worldVertices[i] = vertices[i] / ppt / Constants.PHYSICS_PIXELS_TO_METERS;
         }
 
         polygon.set(worldVertices);
@@ -139,8 +167,8 @@ public class MapBodyBuilder {
 
         for (int i = 0; i < vertices.length / 2; ++i) {
             worldVertices[i] = new Vector2();
-            worldVertices[i].x = vertices[i * 2] / ppt/ Constants.PHYSICS_PIXELS_TO_METERS;
-            worldVertices[i].y = vertices[i * 2 + 1] / ppt/ Constants.PHYSICS_PIXELS_TO_METERS;
+            worldVertices[i].x = vertices[i * 2] / ppt / Constants.PHYSICS_PIXELS_TO_METERS;
+            worldVertices[i].y = vertices[i * 2 + 1] / ppt / Constants.PHYSICS_PIXELS_TO_METERS;
         }
 
         ChainShape chain = new ChainShape();
@@ -163,8 +191,16 @@ public class MapBodyBuilder {
         }
         return false;
     }
+
     public static boolean isDeath(MapObject userData) {
         if (userData.getProperties().get(Constants.PROPERTY_DEATH) != null) {
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean isWillowTheWisp(MapObject userData) {
+        if (userData.getProperties().get(Constants.PROPERTY_WILLOW_THE_WISP) != null) {
             return true;
         }
         return false;
