@@ -90,7 +90,6 @@ public class StickmanWorld {
         }
 
         if (this.stickman.isTouchingDeath() ) {
-            Assets.levelup.play(0.5f);
             showLevelCompleteScreen();
         }
     }
