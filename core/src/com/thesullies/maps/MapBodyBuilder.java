@@ -48,9 +48,6 @@ public class MapBodyBuilder {
                 continue;
             }
 
-
-
-
             Shape shape;
             if (object instanceof RectangleMapObject) {
                 shape = getRectangle((RectangleMapObject) object);
@@ -61,7 +58,6 @@ public class MapBodyBuilder {
                     StickmanWorld.coins.add(coin);
                     continue;
                 }
-
             } else if (object instanceof PolygonMapObject) {
                 shape = getPolygon((PolygonMapObject) object);
             } else if (object instanceof PolylineMapObject) {
@@ -70,10 +66,6 @@ public class MapBodyBuilder {
                 shape = getCircle((CircleMapObject) object);
             } else if (object instanceof EllipseMapObject) {
                 shape = getEllipse((EllipseMapObject) object);
-
-
-
-
             } else {
                 continue;
             }
@@ -82,14 +74,11 @@ public class MapBodyBuilder {
             BodyDef bd = new BodyDef();
             bd.type = BodyDef.BodyType.StaticBody;
             Body body = world.createBody(bd);
-
             body.setUserData(object);
-
-
 
             Fixture fixture = body.createFixture(shape, 1);
             Object sensor = object.getProperties().get(Constants.PROPERTY_SENSOR);
-            if (sensor != null && sensor instanceof Boolean && ((Boolean)sensor)==true) {
+            if (isDeath(object) || (sensor != null && sensor instanceof Boolean && ((Boolean)sensor)==true)) {
                 fixture.setSensor(true);
             }
 
@@ -169,11 +158,15 @@ public class MapBodyBuilder {
     }
 
     public static boolean isCoin(MapObject userData) {
-
         if (userData.getProperties().get(Constants.PROPERTY_COIN) != null) {
             return true;
         }
-
+        return false;
+    }
+    public static boolean isDeath(MapObject userData) {
+        if (userData.getProperties().get(Constants.PROPERTY_DEATH) != null) {
+            return true;
+        }
         return false;
     }
 }

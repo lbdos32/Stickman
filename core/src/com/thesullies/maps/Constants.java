@@ -14,6 +14,7 @@ public class Constants {
     public static final String PROPERTY_SENSOR = "sensor";
     public static final String PROPERTY_DOOR = "exit";
     public static final String PROPERTY_COIN = "coin";
+    public static final String PROPERTY_DEATH = "death";
 
 
     public static final String MAP_LAYER_OBJECTS = "Objects";

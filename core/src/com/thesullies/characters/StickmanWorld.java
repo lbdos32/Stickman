@@ -88,6 +88,11 @@ public class StickmanWorld {
             Assets.levelup.play(0.5f);
             showLevelCompleteScreen();
         }
+
+        if (this.stickman.isTouchingDeath() ) {
+            Assets.levelup.play(0.5f);
+            showLevelCompleteScreen();
+        }
     }
 
     public void showLevelCompleteScreen() {
