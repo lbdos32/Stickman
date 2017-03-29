@@ -26,12 +26,20 @@ import com.thesullies.screens.GamePlayingScreen;
  */
 public class StickmanWorld {
 
-    // Kees list of characters to add/remove from the game
+    // Keeps list of characters to add/remove from the game
     static CharacterManager characterManager = new CharacterManager();
 
     private Stickman stickman;
 
+    /**
+     * This is the list of coins that are added to the level
+     */
     public static List<Coin> coins;
+    /**
+     * List of Dynamic Game Objects that need updating/rendering
+     */
+    public static List<DynamicGameObject> dynamicGameObjects;
+
     int level = 0;
     private SpriteBatch batcher;
 
@@ -51,6 +59,7 @@ public class StickmanWorld {
 
     private void startNewLevel() {
         this.coins = new ArrayList<Coin>();
+        this.dynamicGameObjects = new ArrayList<DynamicGameObject>();
         this.physicsWorld = new com.badlogic.gdx.physics.box2d.World(new Vector2(0, Constants.PHYSICS_GRAVITY), true);
         this.physicsWorld.setContactListener(new Box2DContactListener());
         try {
@@ -83,8 +92,14 @@ public class StickmanWorld {
 
         updateStickman(deltaTime, renderedWorld.inputController.inputDirection, renderedWorld.inputController.jumpPressed);
         updateCoins(deltaTime);
+        updateDynamicGameObjects(deltaTime);
 
-        if (this.stickman.isTouchingDoor() ) { //&& this.coins.size()==0) {
+        if (this.stickman.isTouchingDoor()) { //&& this.coins.size()==0) {
+            Assets.levelup.play(0.5f);
+            showLevelCompleteScreen();
+        }
+
+        if (this.stickman.isTouchingDeath()) {
             showLevelCompleteScreen();
         }
     }
@@ -103,7 +118,11 @@ public class StickmanWorld {
             coin.update(deltaTime);
         }
     }
-
+    private void updateDynamicGameObjects(float deltaTime) {
+        for (DynamicGameObject gameObject : this.dynamicGameObjects) {
+            gameObject.update(deltaTime);
+        }
+    }
     private void updateStickman(float deltaTime, Vector2 inputDirection, boolean jumpPressed) {
         stickman.update(deltaTime, inputDirection, jumpPressed);
     }

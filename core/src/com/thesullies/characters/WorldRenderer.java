@@ -135,7 +135,7 @@ public class WorldRenderer {
 
     private int secondsSinceLevelStart() {
         long now = System.currentTimeMillis();
-        return (int)((now - this.stickmanWorld.levelTimeStart) / 1000);
+        return (int) ((now - this.stickmanWorld.levelTimeStart) / 1000);
     }
 
     private void renderDebug(Stickman stickman) {
@@ -173,6 +173,7 @@ public class WorldRenderer {
         batch.begin();
         renderStickman(stickman);
         renderCoins();
+        renderDynamicGameObjects();
         font.draw(batch, "Stickman go --->", 1, GAME_HEIGHT - 4); //displayHeight-20);
         batch.end();
     }
@@ -192,4 +193,11 @@ public class WorldRenderer {
             coin.render(this.batch);
         }
     }
+
+    private void renderDynamicGameObjects() {
+        for (DynamicGameObject gameObject : stickmanWorld.dynamicGameObjects) {
+            gameObject.render(this.batch);
+        }
+    }
+
 }

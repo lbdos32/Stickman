@@ -45,7 +45,14 @@ public class Stickman extends DynamicGameObject {
 
     ShapeRenderer debugShapeRenderer = null;
     private int touchingPlatformCount = 0;
+    /**
+     * This is set to true in the handleCollision() method, if touching object with attribute door
+     */
     private boolean touchingDoor = false;
+    /**
+     * This is set to true in the handleCollision() method, if touching object with attribute death
+     */
+    private boolean touchingDeath = false;
     /**
      * True if moving left - used to flip the bitmap image depending on direction of movement.
      */
@@ -258,11 +265,13 @@ public class Stickman extends DynamicGameObject {
 
     /***
      * @param contact
-     * @param otherFixture
+     * @param stickmanFixture - the fixture for Stickman
+     * @param otherFixture - the fixture that Stickman hit
+     * @param contactStart - true for start of contact, false for end of contact
+     * @return return true of the object Stickman collided with is to be removed from the map
      */
     public boolean handleCollision(Contact contact, Fixture stickmanFixture, Fixture otherFixture, boolean contactStart) {
 
-        //if (stickmanFixture.getShape()
         if (otherFixture.getBody().getUserData() != null) {
             if (otherFixture.getBody().getUserData() instanceof MapObject) {
                 return handleCollisionMapObject(stickmanFixture, ((MapObject) otherFixture.getBody().getUserData()), contactStart);
@@ -271,25 +280,18 @@ public class Stickman extends DynamicGameObject {
                 return true;
             }
         }
-        //if (otherFixture.getBody().getUserData()!=null) {
-        //    if (otherFixture.getBody().getUserData() instanceof ) {
-//
-        //          }
-        //    }
         return false;
     }
 
-    private boolean handleCollisionMapObject(Fixture stickmanFixture, MapObject userData, boolean contactStart) {
+    private boolean handleCollisionMapObject(Fixture stickmanFixture, MapObject otherMapObject, boolean contactStart) {
 
         boolean deleteObject = false;
-        if (MapBodyBuilder.isDoor(userData)) {
+        if (MapBodyBuilder.isDoor(otherMapObject)) {
             Gdx.app.debug(Constants.LOG_TAG, "Touching Door: contactStart=" + contactStart);
             this.touchingDoor = true;
-
-            // Time to exit level ?!
-        } else if (MapBodyBuilder.isCoin(userData)) {
-            Gdx.app.debug(Constants.LOG_TAG, "Touching Coin: contactStart=" + contactStart);
-            deleteObject = true;
+        } else if (MapBodyBuilder.isDeath(otherMapObject)) {
+            Gdx.app.debug(Constants.LOG_TAG, "Touching Death: contactStart=" + contactStart);
+            this.touchingDeath = true;
         } else {
             if (stickmanFixture.isSensor()) {
                 if (contactStart)
@@ -301,9 +303,7 @@ public class Stickman extends DynamicGameObject {
             } else {
                 Gdx.app.debug(Constants.LOG_TAG, "Ignoring Touching Platform for non-sensor: contactStart=" + contactStart);
             }
-
         }
-
         return deleteObject;
     }
 
@@ -322,6 +322,9 @@ public class Stickman extends DynamicGameObject {
 
     public boolean isTouchingDoor() {
         return touchingDoor;
+    }
+    public boolean isTouchingDeath() {
+        return touchingDeath;
     }
 
 }
