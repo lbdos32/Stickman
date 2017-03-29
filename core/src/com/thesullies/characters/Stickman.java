@@ -35,7 +35,7 @@ public class Stickman extends DynamicGameObject {
     public static final int STICKMAN_SPAWN_Y = 100;
 
 
-    private static final int MAX_LINEAR_VELOCITY_X = 4;
+    private static final float MAX_LINEAR_VELOCITY_X = 3.5f;
     private static final float JUMP_IMPULSE = 2f;
     private static final int STICKMAN_LINEAR_DAMPING = 2;
     private static final float STICKMAN_GRAVITY_SCALE = 2f;

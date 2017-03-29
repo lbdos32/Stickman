@@ -100,6 +100,8 @@ public class StickmanWorld {
         }
 
         if (this.stickman.isTouchingDeath()) {
+            // Assets.deathSounds.get(1).play(0.5f);
+            Assets.getRandomDeathSound().play(0.5f);
             showLevelCompleteScreen();
         }
     }
