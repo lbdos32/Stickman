@@ -63,7 +63,7 @@ public class MapBodyBuilder {
                 } else if (MapBodyBuilder.isWillowTheWisp(object)) {
                     WillowTheWisp wtw = new WillowTheWisp(
                             MapBodyBuilder.getCenterXOfRectangle((RectangleMapObject) object),
-                            MapBodyBuilder.getCenterYOfRectangle((RectangleMapObject) object),
+                            MapBodyBuilder.getBottomOfRectangle((RectangleMapObject) object),
                             world);
                     StickmanWorld.dynamicGameObjects.add(wtw);
                     continue;
