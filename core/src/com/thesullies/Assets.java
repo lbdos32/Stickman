@@ -10,6 +10,11 @@ import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
 /**
  * Created by kosullivan on 04/01/2017.
  */
@@ -23,6 +28,7 @@ public class Assets {
     public static Sound materialise = null;
     public static Sound coinCollect = null;
     public static Sound levelup = null;
+    public static List<Sound> deathSounds = null;
 
     public static void load() {
         TextureRegion[] idleFrames = new TextureRegion[8];
@@ -53,6 +59,9 @@ public class Assets {
         materialise = Gdx.audio.newSound(Gdx.files.internal("sounds/materialise.wav"));
         coinCollect = Gdx.audio.newSound(Gdx.files.internal("sounds/coinCollect.wav"));
         levelup = Gdx.audio.newSound(Gdx.files.internal("sounds/levelup.wav"));
+        deathSounds  = new ArrayList<Sound>();
+        deathSounds.add(Gdx.audio.newSound(Gdx.files.internal("sounds/death_00.wav")));
+        deathSounds.add(Gdx.audio.newSound(Gdx.files.internal("sounds/death_01.wav")));
     }
 
     private static void loadCoinAnimation() {
@@ -62,6 +71,12 @@ public class Assets {
             coinFrames[i] = new TextureRegion(new Texture(fileName));
         }
         coinAnimation = new Animation(ANIMATION_SPEED, coinFrames);
+    }
+
+    public static Sound getRandomDeathSound() {
+        Random random = new Random();
+        int index = random.nextInt(deathSounds.size());
+        return deathSounds.get(index);
     }
 
 }
