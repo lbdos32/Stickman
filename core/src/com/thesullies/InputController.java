@@ -97,13 +97,13 @@ public class InputController {
 
     public void renderInputControls() {
         shapeRenderer.setColor(Color.RED);
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.circle(this.controlStickNeutral.x, controlStickNeutral.y, constrolStickNeutralRadius);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        //shapeRenderer.circle(this.controlStickNeutral.x, controlStickNeutral.y, constrolStickNeutralRadius);
         drawJumpController();
         drawRightController();
-        drawUpController();
+        //drawUpController();
         drawLeftController();
-        drawDownController();
+        //drawDownController();
         shapeRenderer.end();
     }
 
@@ -112,7 +112,10 @@ public class InputController {
             shapeRenderer.setColor(Color.BLUE);
         else
             shapeRenderer.setColor(Color.WHITE);
-        shapeRenderer.rect(rectJumpControl.x, rectJumpControl.y, rectJumpControl.width, rectJumpControl.height);
+        shapeRenderer.circle(rectJumpControl.x + rectJumpControl.width/2, rectJumpControl.y+rectJumpControl.height/2, rectJumpControl.height/2);
+        shapeRenderer.circle(rectJumpControl.x + rectJumpControl.width/2, rectJumpControl.y+rectJumpControl.height/2, rectJumpControl.height/2.1f);
+        shapeRenderer.circle(rectJumpControl.x + rectJumpControl.width/2, rectJumpControl.y+rectJumpControl.height/2, rectJumpControl.height/2.2f);
+//        shapeRenderer.rect(rectJumpControl.x, rectJumpControl.y, rectJumpControl.width, rectJumpControl.height);
 
     }
 
@@ -121,7 +124,8 @@ public class InputController {
             shapeRenderer.setColor(Color.BLUE);
         else
             shapeRenderer.setColor(Color.WHITE);
-        shapeRenderer.rect(rectDownControl.x, rectDownControl.y, rectDownControl.width, rectDownControl.height);
+        //shapeRenderer.rect(rectDownControl.x, rectDownControl.y, rectDownControl.width, rectDownControl.height);
+        shapeRenderer.circle(rectDownControl.x + rectDownControl.width/2, rectDownControl.y+rectDownControl.height/2, rectDownControl.height/2);
     }
 
     private void drawLeftController() {
@@ -129,7 +133,10 @@ public class InputController {
             shapeRenderer.setColor(Color.BLUE);
         else
             shapeRenderer.setColor(Color.WHITE);
-        shapeRenderer.rect(rectLeftControl.x, rectLeftControl.y, rectLeftControl.width, rectLeftControl.height);
+//        shapeRenderer.rect(rectLeftControl.x, rectLeftControl.y, rectLeftControl.width, rectLeftControl.height);
+        shapeRenderer.circle(rectLeftControl.x + rectLeftControl.width/2, rectLeftControl.y+rectLeftControl.height/2, rectLeftControl.height/2);
+        shapeRenderer.circle(rectLeftControl.x + rectLeftControl.width/2, rectLeftControl.y+rectLeftControl.height/2, rectLeftControl.height/2.1f);
+        shapeRenderer.circle(rectLeftControl.x + rectLeftControl.width/2, rectLeftControl.y+rectLeftControl.height/2, rectLeftControl.height/2.2f);
     }
 
     private void drawUpController() {
@@ -137,7 +144,8 @@ public class InputController {
             shapeRenderer.setColor(Color.BLUE);
         else
             shapeRenderer.setColor(Color.WHITE);
-        shapeRenderer.rect(rectUpControl.x, rectUpControl.y, rectUpControl.width, rectUpControl.height);
+//        shapeRenderer.rect(rectUpControl.x, rectUpControl.y, rectUpControl.width, rectUpControl.height);
+        shapeRenderer.circle(rectUpControl.x + rectUpControl.width/2, rectUpControl.y+rectUpControl.height/2, rectUpControl.height/2);
     }
 
     private void drawRightController() {
@@ -145,7 +153,10 @@ public class InputController {
             shapeRenderer.setColor(Color.BLUE);
         else
             shapeRenderer.setColor(Color.WHITE);
-        shapeRenderer.rect(rectRightControl.x, rectRightControl.y, rectRightControl.width, rectRightControl.height);
+//        shapeRenderer.rect(rectRightControl.x, rectRightControl.y, rectRightControl.width, rectRightControl.height);
+        shapeRenderer.circle(rectRightControl.x + rectRightControl.width/2, rectRightControl.y+rectRightControl.height/2, rectRightControl.height/2);
+        shapeRenderer.circle(rectRightControl.x + rectRightControl.width/2, rectRightControl.y+rectRightControl.height/2, rectRightControl.height/2.1f);
+        shapeRenderer.circle(rectRightControl.x + rectRightControl.width/2, rectRightControl.y+rectRightControl.height/2, rectRightControl.height/2.2f);
     }
 
 }

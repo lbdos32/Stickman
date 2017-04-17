@@ -88,7 +88,7 @@ public class MapBodyBuilder {
 
             Fixture fixture = body.createFixture(shape, 1);
             Object sensor = object.getProperties().get(Constants.PROPERTY_SENSOR);
-            if (isDeath(object) || isWillowTheWisp(object) || (sensor != null && sensor instanceof Boolean && ((Boolean) sensor) == true)) {
+            if (isDeath(object) || isDoor(object) || isWillowTheWisp(object) || (sensor != null && sensor instanceof Boolean && ((Boolean) sensor) == true)) {
                 fixture.setSensor(true);
             }
             if (isDoor(object)) {
