@@ -110,7 +110,7 @@ public class GameOverScreen extends ScreenAdapter {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         this.batch.begin();
 
-        this.glyphLayout.setText(font, "Stickman Go", Color.BLUE, Gdx.graphics.getWidth(), Align.center, true);
+        this.glyphLayout.setText(font, "GAME OVER", Color.BLUE, Gdx.graphics.getWidth(), Align.center, true);
         float yPos = this.textYOffset;// + Gdx.graphics.getHeight()/2-this.glyphLayout.height/2;
         this.font.draw(
                 this.batch,
@@ -120,7 +120,7 @@ public class GameOverScreen extends ScreenAdapter {
          * Only draw the "touch screen to start" text if blinkStatus is true AND the text is at the target size.
          */
         if (this.blinkStatus && isTextAtTargetSize()) {
-            this.glyphLayout.setText(font, "Touch screen to start", Color.WHITE, Gdx.graphics.getWidth(), Align.center, true);
+            this.glyphLayout.setText(font, "Touch screen to restart", Color.WHITE, Gdx.graphics.getWidth(), Align.center, true);
             yPos = this.textYOffset - (30 * this.textScale); // + (Gdx.graphics.getHeight()/2-this.glyphLayout.height/2)
             this.font.draw(
                     this.batch,
