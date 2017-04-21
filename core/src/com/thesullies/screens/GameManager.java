@@ -10,6 +10,7 @@ import com.thesullies.StickmanGame;
  */
 public class GameManager {
 
+    private GameOverScreen gameOverScreen = null;
     private GamePlayingScreen gamePlayingScreen = null;
     private StickmanGame stickmanGame = null;
     private GameStartScreen gameStartScreen;
@@ -31,6 +32,8 @@ public class GameManager {
 
         if (gameStartScreen==null) {
             gameStartScreen = new GameStartScreen(this);
+        } else {
+            gameStartScreen.init(this);
         }
         return gameStartScreen;
 
@@ -45,7 +48,12 @@ public class GameManager {
     }
 
     public ScreenAdapter getGameOverScreen() {
-        return null;
+        if (gameOverScreen == null) {
+            gameOverScreen = new GameOverScreen(this);
+        } else {
+            gameOverScreen.init(this);
+        }
+        return gameOverScreen;
     }
 
     public ScreenAdapter getHighScoreScreen() {

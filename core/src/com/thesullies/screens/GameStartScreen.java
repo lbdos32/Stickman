@@ -52,7 +52,7 @@ public class GameStartScreen extends ScreenAdapter {
         init(gameManager);
     }
 
-    private void init(GameManager gameManager) {
+    public void init(GameManager gameManager) {
         this.gameManager = gameManager;
         batch = new SpriteBatch();
         this.glyphLayout = new GlyphLayout();

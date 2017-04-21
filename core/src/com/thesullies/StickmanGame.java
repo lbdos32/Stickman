@@ -27,6 +27,10 @@ public class StickmanGame extends Game {
         setScreen(gameManager.getGameStartScreen());
     }
 
+    public void setGameOverScreen() {
+
+        setScreen(gameManager.getGameOverScreen());
+    }
     public void setLevelCompleteScreen() {
         setScreen(gameManager.getLevelCompleteScreen());
     }
@@ -37,6 +41,7 @@ public class StickmanGame extends Game {
         if (Gdx.input.isTouched()) {
             if (getScreen().equals(gameManager.getGameStartScreen())) {
                 // On Start Screen, when touched go to game screen.
+                gameManager.getGamePlayingScreen().restartGame();
                 setScreen(gameManager.getGamePlayingScreen());
             }
             else if (getScreen().equals(gameManager.getLevelCompleteScreen())) {
@@ -44,6 +49,10 @@ public class StickmanGame extends Game {
                     setScreen(gameManager.getGamePlayingScreen());
                     gameManager.getGamePlayingScreen().nextLevel();
                 }
+            }
+            else if (getScreen().equals(gameManager.getGameOverScreen())) {
+                // On GameOver Screen, when touched restart the game
+                setScreen(gameManager.getGameStartScreen());
             }
         }
     }

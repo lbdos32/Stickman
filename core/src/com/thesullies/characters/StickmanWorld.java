@@ -55,6 +55,8 @@ public class StickmanWorld {
     public StickmanWorld(SpriteBatch batcher) {
         this.batcher = batcher;
         levelMapManager = new LevelMapManager();
+
+        this.level = StickmanWorld.START_LEVEL;
         startNewLevel();
     }
 
@@ -103,12 +105,22 @@ public class StickmanWorld {
         if (this.stickman.isTouchingDeath()) {
             // Assets.deathSounds.get(1).play(0.5f);
             Assets.getRandomDeathSound().play(0.5f);
-            showLevelCompleteScreen();
+            showGameOverScreen();
         }
+    }
+
+
+    public void showGameOverScreen() {
+        GamePlayingScreen.game.setGameOverScreen();
     }
 
     public void showLevelCompleteScreen() {
         GamePlayingScreen.game.setLevelCompleteScreen();
+    }
+
+    public void restartGame() {
+        level = START_LEVEL;
+        startNewLevel();
     }
 
     public void gotoNextLevel() {

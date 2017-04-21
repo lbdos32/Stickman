@@ -51,6 +51,10 @@ public class GamePlayingScreen extends ScreenAdapter {
         if (state == GAME_RUNNING) state = GAME_PAUSED;
     }
 
+    public void restartGame() {
+        this.stickmanWorld.restartGame();
+    }
+
     public void nextLevel() {
         this.stickmanWorld.gotoNextLevel();
     }
