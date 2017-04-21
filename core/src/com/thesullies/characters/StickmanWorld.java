@@ -26,6 +26,7 @@ import com.thesullies.screens.GamePlayingScreen;
  */
 public class StickmanWorld {
 
+    private static final int START_LEVEL = 0;
     // Keeps list of characters to add/remove from the game
     static CharacterManager characterManager = new CharacterManager();
 
@@ -40,7 +41,7 @@ public class StickmanWorld {
      */
     public static List<DynamicGameObject> dynamicGameObjects;
 
-    int level = 0;
+    int level = StickmanWorld.START_LEVEL;
     private SpriteBatch batcher;
 
     long levelTimeStart;
@@ -54,6 +55,8 @@ public class StickmanWorld {
     public StickmanWorld(SpriteBatch batcher) {
         this.batcher = batcher;
         levelMapManager = new LevelMapManager();
+
+        this.level = StickmanWorld.START_LEVEL;
         startNewLevel();
     }
 
@@ -102,12 +105,22 @@ public class StickmanWorld {
         if (this.stickman.isTouchingDeath()) {
             // Assets.deathSounds.get(1).play(0.5f);
             Assets.getRandomDeathSound().play(0.5f);
-            showLevelCompleteScreen();
+            showGameOverScreen();
         }
+    }
+
+
+    public void showGameOverScreen() {
+        GamePlayingScreen.game.setGameOverScreen();
     }
 
     public void showLevelCompleteScreen() {
         GamePlayingScreen.game.setLevelCompleteScreen();
+    }
+
+    public void restartGame() {
+        level = START_LEVEL;
+        startNewLevel();
     }
 
     public void gotoNextLevel() {
