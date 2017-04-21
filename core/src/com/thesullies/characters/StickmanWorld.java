@@ -26,6 +26,7 @@ import com.thesullies.screens.GamePlayingScreen;
  */
 public class StickmanWorld {
 
+    private static final int START_LEVEL = 0;
     // Keeps list of characters to add/remove from the game
     static CharacterManager characterManager = new CharacterManager();
 
@@ -40,7 +41,7 @@ public class StickmanWorld {
      */
     public static List<DynamicGameObject> dynamicGameObjects;
 
-    int level = 0;
+    int level = StickmanWorld.START_LEVEL;
     private SpriteBatch batcher;
 
     long levelTimeStart;
