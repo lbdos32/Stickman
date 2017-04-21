@@ -32,6 +32,11 @@ public class Constants {
      */
     public static final String PROPERTY_WILLOW_THE_WISP = "willowTheWisp";
 
+    /**
+     * If an object has this property, a willow the wisp particle animation will be played in its location
+     */
+    public static final String PROPERTY_FROG_SPAWN = "frogSpawn";
+
 
     public static final String MAP_LAYER_OBJECTS = "Objects";
     public static final String MAP_LAYER_PLATFORM = "PlatformTiles";

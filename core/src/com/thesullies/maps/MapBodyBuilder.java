@@ -25,6 +25,7 @@ import com.badlogic.gdx.physics.box2d.Shape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.thesullies.characters.Coin;
+import com.thesullies.characters.FrogSpawn;
 import com.thesullies.characters.StickmanWorld;
 import com.thesullies.characters.WillowTheWisp;
 
@@ -67,6 +68,13 @@ public class MapBodyBuilder {
                             world);
                     StickmanWorld.dynamicGameObjects.add(wtw);
                     continue;
+                } else if (MapBodyBuilder.isFrogSpawn(object)) {
+                    FrogSpawn fs = new FrogSpawn(
+                            MapBodyBuilder.getCenterXOfRectangle((RectangleMapObject) object),
+                            MapBodyBuilder.getBottomOfRectangle((RectangleMapObject) object),
+                            world);
+                    StickmanWorld.dynamicGameObjects.add(fs);
+                    continue;
                 }
             } else if (object instanceof PolygonMapObject) {
                 shape = getPolygon((PolygonMapObject) object);
@@ -88,7 +96,11 @@ public class MapBodyBuilder {
 
             Fixture fixture = body.createFixture(shape, 1);
             Object sensor = object.getProperties().get(Constants.PROPERTY_SENSOR);
-            if (isDeath(object) || isDoor(object) || isWillowTheWisp(object) || (sensor != null && sensor instanceof Boolean && ((Boolean) sensor) == true)) {
+            if (isDeath(object) ||
+                    isDoor(object) ||
+                    isWillowTheWisp(object) ||
+                    isFrogSpawn(object) ||
+                    (sensor != null && sensor instanceof Boolean && ((Boolean) sensor) == true)) {
                 fixture.setSensor(true);
             }
             if (isDoor(object)) {
@@ -107,13 +119,15 @@ public class MapBodyBuilder {
     }
 
     private static float getCenterXOfRectangle(RectangleMapObject object) {
-        return (object.getRectangle().getX()/ppt)  + (object.getRectangle().getWidth()/2)/ ppt;
+        return (object.getRectangle().getX() / ppt) + (object.getRectangle().getWidth() / 2) / ppt;
     }
+
     private static float getCenterYOfRectangle(RectangleMapObject object) {
-        return (object.getRectangle().getY()  + object.getRectangle().getHeight()/2) / ppt;
+        return (object.getRectangle().getY() + object.getRectangle().getHeight() / 2) / ppt;
     }
+
     private static float getBottomOfRectangle(RectangleMapObject object) {
-        return (object.getRectangle().getY()  ) / ppt;
+        return (object.getRectangle().getY()) / ppt;
     }
 
 
@@ -201,6 +215,13 @@ public class MapBodyBuilder {
 
     public static boolean isWillowTheWisp(MapObject userData) {
         if (userData.getProperties().get(Constants.PROPERTY_WILLOW_THE_WISP) != null) {
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean isFrogSpawn(MapObject userData) {
+        if (userData.getProperties().get(Constants.PROPERTY_FROG_SPAWN) != null) {
             return true;
         }
         return false;
