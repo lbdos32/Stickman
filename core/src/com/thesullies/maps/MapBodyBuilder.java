@@ -104,11 +104,11 @@ public class MapBodyBuilder {
                 fixture.setSensor(true);
             }
             if (isDoor(object)) {
-                WillowTheWisp wtw = new WillowTheWisp(
+                FrogSpawn fs = new FrogSpawn(
                         MapBodyBuilder.getCenterXOfRectangle((RectangleMapObject) object),
                         MapBodyBuilder.getBottomOfRectangle((RectangleMapObject) object),
                         world);
-                StickmanWorld.dynamicGameObjects.add(wtw);
+                StickmanWorld.dynamicGameObjects.add(fs);
             }
 
             bodies.add(body);

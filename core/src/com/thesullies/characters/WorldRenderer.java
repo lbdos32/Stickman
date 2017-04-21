@@ -18,6 +18,7 @@ package com.thesullies.characters;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.FPSLogger;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -27,6 +28,7 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.utils.TimeUtils;
 import com.thesullies.Assets;
 import com.thesullies.InputController;
 import com.thesullies.maps.Constants;
@@ -44,6 +46,7 @@ import com.thesullies.maps.MapBodyBuilder;
  */
 public class WorldRenderer {
 
+    private static final FPSLogger fpsLogger = new FPSLogger();
     public static final int GAME_WIDTH = 120;
     public static final int GAME_HEIGHT = 80;
 
@@ -68,6 +71,11 @@ public class WorldRenderer {
     InputController inputController;
 
     private int displayWidth, displayHeight;
+
+    // used for FPS calculation
+    private long lastTimeCounted;
+    private float sinceChange;
+    private float frameRate;
 
     public WorldRenderer(SpriteBatch batch, StickmanWorld stickmanWorld, TiledMap map) {
         this.stickmanWorld = stickmanWorld;
@@ -109,6 +117,16 @@ public class WorldRenderer {
 
     public void render(Stickman stickman, Rectangle boundingRectCamera) {
 
+        fpsLogger.log();
+
+        long delta = TimeUtils.timeSinceMillis(lastTimeCounted);
+        lastTimeCounted = TimeUtils.millis();
+        sinceChange += delta;
+        if(sinceChange >= 1000) {
+            sinceChange = 0;
+            frameRate = Gdx.graphics.getFramesPerSecond();
+        }
+
         updateCam(stickman, boundingRectCamera);
         batch.setProjectionMatrix(guiCam.combined);
         debugMatrix = batch.getProjectionMatrix().cpy().scale(Constants.PHYSICS_PIXELS_TO_METERS,
@@ -142,6 +160,7 @@ public class WorldRenderer {
         if (debugOutput) {
             debugBatch.begin();
             debugFont.draw(debugBatch, stickman.toString(), 1, displayHeight - 20);
+            debugFont.draw(debugBatch, "fps " + frameRate, 3, displayHeight - 60);
             debugBatch.end();
         }
     }

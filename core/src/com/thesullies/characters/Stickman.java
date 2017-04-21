@@ -311,7 +311,7 @@ public class Stickman extends DynamicGameObject {
     @Override
     public String toString() {
 
-        return String.format("Stickman state=%s, pos(%.2f, %.2f), physicsPos(%.2f, %.2f), linearVel(%.2f, %.2f), touchingPlatform=%s (%d) ",
+        return String.format("State=%s, pos(%.2f, %.2f), physicsPos(%.2f, %.2f), linearVel(%.2f, %.2f), touchingPlatform=%s (%d) ",
                 this.state.toString(),
                 this.position.x, this.position.y,
                 this.physicsBody.getPosition().x, this.physicsBody.getPosition().y,
