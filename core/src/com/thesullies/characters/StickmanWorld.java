@@ -110,6 +110,11 @@ public class StickmanWorld {
         GamePlayingScreen.game.setLevelCompleteScreen();
     }
 
+    public void restartGame() {
+        level = 0;
+        startNewLevel();
+    }
+
     public void gotoNextLevel() {
         level++;
         startNewLevel();
