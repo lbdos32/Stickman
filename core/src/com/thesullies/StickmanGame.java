@@ -28,6 +28,7 @@ public class StickmanGame extends Game {
     }
 
     public void setGameOverScreen() {
+
         setScreen(gameManager.getGameOverScreen());
     }
     public void setLevelCompleteScreen() {

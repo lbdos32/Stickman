@@ -32,6 +32,8 @@ public class GameManager {
 
         if (gameStartScreen==null) {
             gameStartScreen = new GameStartScreen(this);
+        } else {
+            gameStartScreen.init(this);
         }
         return gameStartScreen;
 
@@ -46,8 +48,10 @@ public class GameManager {
     }
 
     public ScreenAdapter getGameOverScreen() {
-        if (gameOverScreen==null) {
+        if (gameOverScreen == null) {
             gameOverScreen = new GameOverScreen(this);
+        } else {
+            gameOverScreen.init(this);
         }
         return gameOverScreen;
     }

@@ -23,7 +23,7 @@ public class GameOverScreen extends ScreenAdapter {
     GlyphLayout glyphLayout;
 
 
-    float red=0.1f, green=0.8f, blue = 0.7f;
+    float red=0.9f, green=0.0f, blue = 0.0f;
 
     float textYOffset = 0f;
 
@@ -51,7 +51,7 @@ public class GameOverScreen extends ScreenAdapter {
         init(gameManager);
     }
 
-    private void init(GameManager gameManager) {
+    public void init(GameManager gameManager) {
         this.gameManager = gameManager;
         batch = new SpriteBatch();
         this.glyphLayout = new GlyphLayout();
@@ -61,7 +61,9 @@ public class GameOverScreen extends ScreenAdapter {
 
         this.font = new BitmapFont();
         this.font.setColor(Color.WHITE);
-        this.font.getData().setScale(this.textScale);
+
+
+        red=0.9f; green=0.0f; blue = 0.0f;
     }
 
     @Override
@@ -98,6 +100,13 @@ public class GameOverScreen extends ScreenAdapter {
             this.blinkStatus = !this.blinkStatus;
         }
 
+        green += 0.005f;
+        if (green >=1)
+            green = 1;
+
+        blue += 0.005;
+        if (green >=1)
+            green = 1;
         //if (textYOffset>Gdx.graphics.getHeight()/2)
         //    textYOffset-=TEXT_DROP_SPEED;
 
@@ -110,7 +119,7 @@ public class GameOverScreen extends ScreenAdapter {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         this.batch.begin();
 
-        this.glyphLayout.setText(font, "GAME OVER", Color.BLUE, Gdx.graphics.getWidth(), Align.center, true);
+        this.glyphLayout.setText(font, "Ha ha ha GAME OVER", Color.BLUE, Gdx.graphics.getWidth(), Align.center, true);
         float yPos = this.textYOffset;// + Gdx.graphics.getHeight()/2-this.glyphLayout.height/2;
         this.font.draw(
                 this.batch,
