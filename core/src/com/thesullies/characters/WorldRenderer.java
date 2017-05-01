@@ -53,7 +53,7 @@ public class WorldRenderer {
     StickmanWorld stickmanWorld;
     public static OrthographicCamera guiCam;
     SpriteBatch batch;
-    SpriteBatch debugBatch;
+
 
     SpriteBatch gameStatusBatch;
     BitmapFont gameStatusFont;
@@ -62,12 +62,12 @@ public class WorldRenderer {
 
 
     BitmapFont font = null;
+
     public static boolean debugOutput = true;
     BitmapFont debugFont = null;
-
     Matrix4 debugMatrix;
     Box2DDebugRenderer debugRenderer;
-
+    SpriteBatch debugBatch;
     InputController inputController;
 
     private int displayWidth, displayHeight;
@@ -93,23 +93,26 @@ public class WorldRenderer {
         this.mapRenderer = new OrthogonalTiledMapRenderer(map, LevelMapManager.MAP_UNIT_SCALE);
 
         this.batch = batch;
-        debugBatch = new SpriteBatch();
+
         gameStatusBatch = new SpriteBatch();
 
 
         font = new BitmapFont();
         font.setColor(Color.GREEN);
         font.getData().setScale(0.5f);
-        debugFont = new BitmapFont();
-        debugFont.setColor(Color.WHITE);
-        debugFont.getData().setScale(2.0f);
 
         this.gameStatusFont = new BitmapFont();
         this.gameStatusFont.setColor(Color.WHITE);
         this.gameStatusFont.getData().setScale(3.0f);
 
 
-        debugRenderer = new Box2DDebugRenderer();
+        if (debugOutput) {
+            debugRenderer = new Box2DDebugRenderer();
+            debugFont = new BitmapFont();
+            debugFont.setColor(Color.WHITE);
+            debugFont.getData().setScale(2.0f);
+            debugBatch = new SpriteBatch();
+        }
 
         inputController = new InputController(displayWidth, displayHeight);
     }
@@ -122,21 +125,23 @@ public class WorldRenderer {
         long delta = TimeUtils.timeSinceMillis(lastTimeCounted);
         lastTimeCounted = TimeUtils.millis();
         sinceChange += delta;
-        if(sinceChange >= 1000) {
+        if (sinceChange >= 1000) {
             sinceChange = 0;
             frameRate = Gdx.graphics.getFramesPerSecond();
         }
 
         updateCam(stickman, boundingRectCamera);
         batch.setProjectionMatrix(guiCam.combined);
-        debugMatrix = batch.getProjectionMatrix().cpy().scale(Constants.PHYSICS_PIXELS_TO_METERS,
-                Constants.PHYSICS_PIXELS_TO_METERS, 0);
         renderMap();
         inputController.renderInputControls();
         renderObjects(stickman);
         renderStatus(stickman);
-        renderDebug(stickman);
-        debugRenderer.render(this.stickmanWorld.physicsWorld, debugMatrix);
+        if (debugOutput) {
+            debugMatrix = batch.getProjectionMatrix().cpy().scale(Constants.PHYSICS_PIXELS_TO_METERS,
+                    Constants.PHYSICS_PIXELS_TO_METERS, 0);
+            renderDebug(stickman);
+            debugRenderer.render(this.stickmanWorld.physicsWorld, debugMatrix);
+        }
     }
 
     private void renderStatus(Stickman stickman) {

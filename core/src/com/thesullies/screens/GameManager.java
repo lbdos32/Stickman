@@ -12,7 +12,7 @@ public class GameManager {
 
     private GameOverScreen gameOverScreen = null;
     private GamePlayingScreen gamePlayingScreen = null;
-    private StickmanGame stickmanGame = null;
+    public StickmanGame stickmanGame = null;
     private GameStartScreen gameStartScreen;
     private LevelCompleteScreen levelCompleteScreen;
 
@@ -21,37 +21,29 @@ public class GameManager {
     }
 
     public LevelCompleteScreen getLevelCompleteScreen() {
-
         if (levelCompleteScreen==null) {
             levelCompleteScreen = new LevelCompleteScreen(this);
         }
         return levelCompleteScreen;
     }
 
-    public ScreenAdapter getGameStartScreen() {
-
+    public StickmanScreenAdapter getGameStartScreen() {
         if (gameStartScreen==null) {
             gameStartScreen = new GameStartScreen(this);
-        } else {
-            gameStartScreen.init(this);
         }
         return gameStartScreen;
-
     }
 
     public GamePlayingScreen getGamePlayingScreen() {
-
         if (gamePlayingScreen==null) {
             gamePlayingScreen = new GamePlayingScreen(this.stickmanGame);
         }
         return gamePlayingScreen;
     }
 
-    public ScreenAdapter getGameOverScreen() {
+    public StickmanScreenAdapter getGameOverScreen() {
         if (gameOverScreen == null) {
             gameOverScreen = new GameOverScreen(this);
-        } else {
-            gameOverScreen.init(this);
         }
         return gameOverScreen;
     }

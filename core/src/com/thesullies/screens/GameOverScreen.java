@@ -14,16 +14,15 @@ import com.badlogic.gdx.utils.Align;
  * Created by kosullivan on 04/01/2017.
  */
 
-public class GameOverScreen extends ScreenAdapter {
+public class GameOverScreen extends StickmanScreenAdapter {
 
     private OrthographicCamera guiCam;
-    SpriteBatch batch;
     BitmapFont font;
     GameManager gameManager;
     GlyphLayout glyphLayout;
 
 
-    float red=0.9f, green=0.0f, blue = 0.0f;
+    float red = 0.9f, green = 0.0f, blue = 0.0f;
 
     float textYOffset = 0f;
 
@@ -51,19 +50,25 @@ public class GameOverScreen extends ScreenAdapter {
         init(gameManager);
     }
 
+    @Override
     public void init(GameManager gameManager) {
         this.gameManager = gameManager;
-        batch = new SpriteBatch();
-        this.glyphLayout = new GlyphLayout();
+
+        if (this.glyphLayout == null) {
+            this.glyphLayout = new GlyphLayout();
+        }
+
+        if (this.font == null) {
+            this.font = new BitmapFont();
+            this.font.setColor(Color.WHITE);
+        }
 
         this.textYOffset = Gdx.graphics.getHeight() / 2;
         this.textScale = 0.1f;
 
-        this.font = new BitmapFont();
-        this.font.setColor(Color.WHITE);
-
-
-        red=0.9f; green=0.0f; blue = 0.0f;
+        red = 0.9f;
+        green = 0.0f;
+        blue = 0.0f;
     }
 
     @Override
@@ -101,11 +106,11 @@ public class GameOverScreen extends ScreenAdapter {
         }
 
         green += 0.005f;
-        if (green >=1)
+        if (green >= 1)
             green = 1;
 
         blue += 0.005;
-        if (green >=1)
+        if (green >= 1)
             green = 1;
         //if (textYOffset>Gdx.graphics.getHeight()/2)
         //    textYOffset-=TEXT_DROP_SPEED;
@@ -117,12 +122,12 @@ public class GameOverScreen extends ScreenAdapter {
 
         Gdx.gl.glClearColor(red, green, blue, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        this.batch.begin();
+        this.gameManager.stickmanGame.batcher.begin();
 
         this.glyphLayout.setText(font, "Ha ha ha GAME OVER", Color.BLUE, Gdx.graphics.getWidth(), Align.center, true);
         float yPos = this.textYOffset;// + Gdx.graphics.getHeight()/2-this.glyphLayout.height/2;
         this.font.draw(
-                this.batch,
+                this.gameManager.stickmanGame.batcher,
                 glyphLayout, 0, yPos);
 
         /**
@@ -132,10 +137,10 @@ public class GameOverScreen extends ScreenAdapter {
             this.glyphLayout.setText(font, "Touch screen to restart", Color.WHITE, Gdx.graphics.getWidth(), Align.center, true);
             yPos = this.textYOffset - (30 * this.textScale); // + (Gdx.graphics.getHeight()/2-this.glyphLayout.height/2)
             this.font.draw(
-                    this.batch,
+                    this.gameManager.stickmanGame.batcher,
                     glyphLayout, 0, yPos);
         }
-        batch.end();
+        this.gameManager.stickmanGame.batcher.end();
     }
 
     private boolean isTextAtTargetSize() {
