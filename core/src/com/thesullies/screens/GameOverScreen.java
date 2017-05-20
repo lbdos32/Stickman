@@ -20,7 +20,7 @@ public class GameOverScreen extends StickmanScreenAdapter {
     BitmapFont font;
     GameManager gameManager;
     GlyphLayout glyphLayout;
-
+    public SpriteBatch batcher;
 
     float red = 0.9f, green = 0.0f, blue = 0.0f;
 
@@ -57,6 +57,9 @@ public class GameOverScreen extends StickmanScreenAdapter {
         if (this.glyphLayout == null) {
             this.glyphLayout = new GlyphLayout();
         }
+
+        if (batcher==null)
+            batcher= new SpriteBatch();
 
         if (this.font == null) {
             this.font = new BitmapFont();
@@ -122,12 +125,12 @@ public class GameOverScreen extends StickmanScreenAdapter {
 
         Gdx.gl.glClearColor(red, green, blue, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        this.gameManager.stickmanGame.batcher.begin();
+        this.batcher.begin();
 
         this.glyphLayout.setText(font, "Ha ha ha GAME OVER", Color.BLUE, Gdx.graphics.getWidth(), Align.center, true);
         float yPos = this.textYOffset;// + Gdx.graphics.getHeight()/2-this.glyphLayout.height/2;
         this.font.draw(
-                this.gameManager.stickmanGame.batcher,
+                this.batcher,
                 glyphLayout, 0, yPos);
 
         /**
@@ -137,10 +140,10 @@ public class GameOverScreen extends StickmanScreenAdapter {
             this.glyphLayout.setText(font, "Touch screen to restart", Color.WHITE, Gdx.graphics.getWidth(), Align.center, true);
             yPos = this.textYOffset - (30 * this.textScale); // + (Gdx.graphics.getHeight()/2-this.glyphLayout.height/2)
             this.font.draw(
-                    this.gameManager.stickmanGame.batcher,
+                    this.batcher,
                     glyphLayout, 0, yPos);
         }
-        this.gameManager.stickmanGame.batcher.end();
+        this.batcher.end();
     }
 
     private boolean isTextAtTargetSize() {

@@ -103,9 +103,6 @@ public class GameStartScreen extends StickmanScreenAdapter {
             this.blinkStatus = !this.blinkStatus;
         }
 
-        //if (textYOffset>Gdx.graphics.getHeight()/2)
-        //    textYOffset-=TEXT_DROP_SPEED;
-
     }
 
 
