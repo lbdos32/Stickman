@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="400" height="100" tilewidth="32" tileheight="32" nextobjectid="222">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="400" height="100" tilewidth="32" tileheight="32" nextobjectid="227">
  <tileset firstgid="1" name="night" tilewidth="32" tileheight="32" tilecount="320" columns="16">
   <image source="../tilesheets/night.png" width="512" height="640"/>
  </tileset>
@@ -220,7 +220,7 @@
     <property name="coin" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="108" x="2639" y="2988">
+  <object id="108" name="coin" x="2639" y="2988">
    <properties>
     <property name="coin" type="bool" value="true"/>
    </properties>
@@ -246,7 +246,7 @@
     <property name="coin" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="114" x="2533" y="2994">
+  <object id="114" name="coin" x="2533" y="2994">
    <properties>
     <property name="coin" type="bool" value="true"/>
    </properties>
@@ -256,7 +256,7 @@
     <property name="coin" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="116" x="2722" y="2991">
+  <object id="116" name="coin" x="2722" y="2991">
    <properties>
     <property name="coin" type="bool" value="true"/>
    </properties>
@@ -291,7 +291,7 @@
     <property name="coin" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="149" x="2383" y="2993">
+  <object id="149" name="coin" x="2383" y="2993">
    <properties>
     <property name="coin" type="bool" value="true"/>
    </properties>
@@ -331,7 +331,7 @@
     <property name="coin" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="157" x="2591" y="2991">
+  <object id="157" name="coin" x="2591" y="2991">
    <properties>
     <property name="coin" type="bool" value="true"/>
    </properties>
@@ -416,7 +416,7 @@
     <property name="coin" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="174" x="2443" y="2997">
+  <object id="174" name="coin" x="2443" y="2997">
    <properties>
     <property name="coin" type="bool" value="true"/>
    </properties>
@@ -441,9 +441,10 @@
     <property name="coin" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="181" x="12740" y="2880" width="56" height="127">
+  <object id="181" name="DoorWay" x="12740" y="2880" width="56" height="127">
    <properties>
-    <property name="door" type="bool" value="true"/>
+    <property name="door" type="bool" value="false"/>
+    <property name="exit" type="bool" value="true"/>
    </properties>
   </object>
   <object id="183" x="12792" y="3384"/>
@@ -495,8 +496,8 @@
   <object id="206" x="11553" y="3200">
    <polyline points="0,0 0,-191 190,-190 191,1 -1,2"/>
   </object>
-  <object id="209" x="11809" y="3263">
-   <polyline points="0,0 0,-191 190,-190 191,1 -1,2"/>
+  <object id="209" x="11807" y="3197.69">
+   <polyline points="0,0 0,-124.694 190,-124.041 191,0.65285 -1,1.3057"/>
   </object>
   <object id="210" x="12030.7" y="3199">
    <polyline points="0,0 0,-191 129.635,-190 130.318,1 -0.682292,2"/>
@@ -510,7 +511,10 @@
   <object id="213" x="12799" y="3007">
    <polyline points="0,0 -1,-189"/>
   </object>
-  <object id="214" x="12577" y="3200">
+  <object id="214" name="Death Sensor" x="12643" y="3200">
+   <properties>
+    <property name="death" type="bool" value="true"/>
+   </properties>
    <polyline points="0,0 -12517,-1"/>
   </object>
   <object id="215" x="3006.67" y="3166.67">
@@ -520,6 +524,18 @@
   <object id="220" x="2048.25" y="3008.25" width="159.75" height="63.75"/>
   <object id="221" x="897" y="2912">
    <polyline points="0,0 382,0 447,-64 447,96 639,96 639,159 512,160 512,287"/>
+  </object>
+  <object id="224" name="Death Sensor" x="642" y="3135">
+   <properties>
+    <property name="death" type="bool" value="true"/>
+   </properties>
+   <polyline points="0,0 193,-1"/>
+  </object>
+  <object id="225" name="Death Sensor" type="death catcher" x="1406" y="3192">
+   <properties>
+    <property name="death" type="bool" value="true"/>
+   </properties>
+   <polyline points="0,0 968,3"/>
   </object>
  </objectgroup>
 </map>
