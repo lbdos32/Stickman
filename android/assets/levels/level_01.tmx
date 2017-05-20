@@ -220,7 +220,7 @@
     <property name="coin" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="108" x="2639" y="2988">
+  <object id="108" name="coin" x="2639" y="2988">
    <properties>
     <property name="coin" type="bool" value="true"/>
    </properties>
@@ -246,7 +246,7 @@
     <property name="coin" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="114" x="2533" y="2994">
+  <object id="114" name="coin" x="2533" y="2994">
    <properties>
     <property name="coin" type="bool" value="true"/>
    </properties>
@@ -256,7 +256,7 @@
     <property name="coin" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="116" x="2722" y="2991">
+  <object id="116" name="coin" x="2722" y="2991">
    <properties>
     <property name="coin" type="bool" value="true"/>
    </properties>
@@ -291,7 +291,7 @@
     <property name="coin" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="149" x="2383" y="2993">
+  <object id="149" name="coin" x="2383" y="2993">
    <properties>
     <property name="coin" type="bool" value="true"/>
    </properties>
@@ -331,7 +331,7 @@
     <property name="coin" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="157" x="2591" y="2991">
+  <object id="157" name="coin" x="2591" y="2991">
    <properties>
     <property name="coin" type="bool" value="true"/>
    </properties>
@@ -416,7 +416,7 @@
     <property name="coin" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="174" x="2443" y="2997">
+  <object id="174" name="coin" x="2443" y="2997">
    <properties>
     <property name="coin" type="bool" value="true"/>
    </properties>
@@ -441,10 +441,10 @@
     <property name="coin" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="181" x="12740" y="2880" width="56" height="127">
+  <object id="181" name="DoorWay" x="12740" y="2880" width="56" height="127">
    <properties>
-    <property name="door" type="bool" value="true"/>
-    <property name="exit" type="bool" value="false"/>
+    <property name="door" type="bool" value="false"/>
+    <property name="exit" type="bool" value="true"/>
    </properties>
   </object>
   <object id="183" x="12792" y="3384"/>
@@ -511,7 +511,7 @@
   <object id="213" x="12799" y="3007">
    <polyline points="0,0 -1,-189"/>
   </object>
-  <object id="214" name="Derath Sensor" x="12643" y="3200">
+  <object id="214" name="Death Sensor" x="12643" y="3200">
    <properties>
     <property name="death" type="bool" value="true"/>
    </properties>
