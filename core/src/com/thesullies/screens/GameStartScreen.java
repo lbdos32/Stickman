@@ -10,21 +10,21 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Align;
 import com.thesullies.characters.WorldRenderer;
+import com.thesullies.maps.Constants;
 
 /**
  * Created by kosullivan on 04/01/2017.
  */
 
-public class GameStartScreen extends ScreenAdapter {
+public class GameStartScreen extends StickmanScreenAdapter {
 
     private OrthographicCamera guiCam;
-    SpriteBatch batch;
     BitmapFont font;
     GameManager gameManager;
     GlyphLayout glyphLayout;
 
 
-    float red=0.1f, green=0.8f, blue = 0.7f;
+    float red = 0.1f, green = 0.8f, blue = 0.7f;
 
     float textYOffset = 0f;
 
@@ -52,17 +52,21 @@ public class GameStartScreen extends ScreenAdapter {
         init(gameManager);
     }
 
+    @Override
     public void init(GameManager gameManager) {
         this.gameManager = gameManager;
-        batch = new SpriteBatch();
-        this.glyphLayout = new GlyphLayout();
-
         this.textYOffset = Gdx.graphics.getHeight() / 2;
         this.textScale = 0.1f;
 
-        this.font = new BitmapFont();
-        this.font.setColor(Color.WHITE);
-        this.font.getData().setScale(this.textScale);
+        if (this.glyphLayout == null) {
+            this.glyphLayout = new GlyphLayout();
+        }
+
+        if (this.font == null) {
+            this.font = new BitmapFont();
+            this.font.setColor(Color.WHITE);
+            this.font.getData().setScale(this.textScale);
+        }
     }
 
     @Override
@@ -109,12 +113,12 @@ public class GameStartScreen extends ScreenAdapter {
 
         Gdx.gl.glClearColor(red, green, blue, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        this.batch.begin();
+        this.gameManager.stickmanGame.batcher.begin();
 
         this.glyphLayout.setText(font, "Stickman Go", Color.BLUE, Gdx.graphics.getWidth(), Align.center, true);
         float yPos = this.textYOffset;// + Gdx.graphics.getHeight()/2-this.glyphLayout.height/2;
         this.font.draw(
-                this.batch,
+                this.gameManager.stickmanGame.batcher,
                 glyphLayout, 0, yPos);
 
         /**
@@ -124,10 +128,10 @@ public class GameStartScreen extends ScreenAdapter {
             this.glyphLayout.setText(font, "Touch screen to start", Color.WHITE, Gdx.graphics.getWidth(), Align.center, true);
             yPos = this.textYOffset - (30 * this.textScale); // + (Gdx.graphics.getHeight()/2-this.glyphLayout.height/2)
             this.font.draw(
-                    this.batch,
+                    this.gameManager.stickmanGame.batcher,
                     glyphLayout, 0, yPos);
         }
-        batch.end();
+        this.gameManager.stickmanGame.batcher.end();
     }
 
     private boolean isTextAtTargetSize() {
